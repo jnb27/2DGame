@@ -8,8 +8,7 @@
 enum EntityType
 {
 	Player,
-	PartyMember1,
-	PartyMember2,
+	Party,
 	Enemy
 };
 
@@ -29,6 +28,13 @@ enum Element
 	Ice
 };
 
+enum TargetSys
+{
+	Team,
+	EnemyT, 
+	Default
+};
+
 typedef struct Entity_s
 {
 	Bool       _inuse;
@@ -46,12 +52,27 @@ typedef struct Entity_s
 	int			ElementType;
 	int			Attack;
 	int			Defense;
+	int			ShieldHP;
+
+	int			quantity;
+	int			gold;
+
+	struct		Entity_s *Inventory;
+	struct		Entity_s *ItemSlot1;
+	struct		Entity_s *ItemSlot2;
+	struct		Entity_s *ItemSlot3;
+	struct		Entity_s *ItemSlot4;
+	struct		Entity_s *ItemSlot5;
+
 
 	struct		Entity_s *Member1;
 	struct		Entity_s *Member2;
 	struct		Entity_s *Member3;
 	struct		Entity_s *TargetTeam;
+	struct		Entity_s *FriendlyTeam;
 
+	int			EntType;
+	int			TargetMode;
 	int			TurnComplete;
 	int			TurnActive;  //Maybe have a check that if all entities in the list have TurnActive mechanic in the game loop they'll do different things. 
 	int			ActionPoints; //Maybe something to turn on and off turns

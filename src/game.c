@@ -59,6 +59,8 @@ int main(int argc, char * argv[])
 	team2 = Monster_Team();
 
 	team1->TurnActive = 1;
+	team1->TargetTeam = team2;
+	team2->TargetTeam = team1;
 
 	//water_monster_spawn();
 	
