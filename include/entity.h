@@ -53,6 +53,7 @@ typedef struct Entity_s
 	int			Attack;
 	int			Defense;
 	int			ShieldHP;
+	int			DoubleDMG;
 
 	int			quantity;
 	int			gold;

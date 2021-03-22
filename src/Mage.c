@@ -19,6 +19,7 @@ void HandleInventory(Entity *self);
 void SelectTeamMember(Entity *self);
 void SelectEnemyMember(Entity *self);
 void PickTargetType(Entity *self);
+void EndTurn(Entity *self);
 
 Entity *fire_mage_spawn()
 {
@@ -44,6 +45,7 @@ Entity *fire_mage_spawn()
 	mage->ElementType = Fire;
 	mage->EntType = Party;
 
+	mage->DoubleDMG = 1;
 	mage->ActionPoints = 0;
 	mage->health = 100;
 	mage->mana = 100;
@@ -83,6 +85,7 @@ Entity *water_mage_spawn()
 	mage->ElementType = Water;
 	mage->EntType = Party;
 
+	mage->DoubleDMG = 1;
 	mage->ActionPoints = 0;
 	mage->health = 100;
 	mage->mana = 100;
@@ -120,6 +123,7 @@ Entity *earth_mage_spawn()
 	mage->ElementType = Earth;
 	mage->EntType = Party;
 
+	mage->DoubleDMG = 1;
 	mage->ActionPoints = 0;
 	mage->health = 100;
 	mage->mana = 100;
@@ -134,7 +138,7 @@ Entity *earth_mage_spawn()
 	return mage;
 }
 
-Entity *wind_mage_spawn(Vector2D position)
+Entity *wind_mage_spawn()
 {
 	Entity *mage;
 	mage = entity_new();
@@ -157,6 +161,7 @@ Entity *wind_mage_spawn(Vector2D position)
 	mage->ElementType = Wind;
 	mage->EntType = Party;
 
+	mage->DoubleDMG = 1;
 	mage->ActionPoints = 0;
 	mage->health = 100;
 	mage->mana = 100;
@@ -171,7 +176,7 @@ Entity *wind_mage_spawn(Vector2D position)
 	return mage;
 }
 
-Entity *ice_mage_spawn(Vector2D position)
+Entity *ice_mage_spawn()
 {
 	Entity *mage;
 	mage = entity_new();
@@ -189,6 +194,7 @@ Entity *ice_mage_spawn(Vector2D position)
 	mage->position.x = 240;
 	mage->position.y = 240;
 
+	mage->DoubleDMG = 1;
 	mage->TargetMode = Default;
 	mage->think = IceMage_Think;
 	mage->ElementType = Ice;
@@ -251,59 +257,76 @@ void FireMage_Think(Entity *self)
 	keys = SDL_GetKeyboardState(NULL);
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
+		//If I'm targetting a teammate,
+		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
+		{
+			HandleInventory(self);
+		}
 
-		if (self->target != NULL)
+		//Targetting Friendly Member
+		if (self->target == NULL && self->TargetMode == Team)
+		{
+			SelectTeamMember(self);
+		}
+
+		//When you have a target and it's an enemy, attack it
+		if (self->target != NULL && self->target->EntType == Enemy)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
 				//Do Move 1
-				slog("You attacked Enemy 1");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Fire Mage used Fireball");
+				self->mana -= 10;
+				if (self->target->ElementType == Fire)
+				{
+					self->target->health = (self->target->health - (15 * self->DoubleDMG));
+					self->DoubleDMG = 1;
+					slog("Reduced Damage, Fire on Fire");
+				}
+				else{
+					self->target->health = (self->target->health - (30 * self->DoubleDMG));
+					self->DoubleDMG = 1;
+				}
+
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_2])
 			{
 				//Do Move 2
-				slog("You attacked Enemy 2");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Fire mage used Flame Breath");
+				self->mana -= 25;
+
+				if (self->target->ElementType == Fire)
+				{
+					self->target->FriendlyTeam->Member1->health = (self->target->health - (10 * self->DoubleDMG));
+					self->target->FriendlyTeam->Member2->health = (self->target->health - (10 * self->DoubleDMG));
+					self->target->FriendlyTeam->Member3->health = (self->target->health - (10 * self->DoubleDMG));
+					self->DoubleDMG = 1;
+					slog("Reduced Fire damage");
+				}
+				else {
+					self->target->FriendlyTeam->Member1->health = (self->target->health - (15 * self->DoubleDMG));
+					self->target->FriendlyTeam->Member2->health = (self->target->health - (15 * self->DoubleDMG));
+					self->target->FriendlyTeam->Member3->health = (self->target->health - (15 * self->DoubleDMG));
+					self->DoubleDMG = 1;
+				}
+
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_3])
 			{
 				//Do Move 3
-				slog("You attacked Enemy 3");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Fire Mage used Phoenix Dance, Damage on next hit 2x");
+				self->DoubleDMG = 2;
+				EndTurn(self);
 			}
 		}
 
-		//The following select a target if you don't have one
-		if (keys[SDL_SCANCODE_1] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member1;
-			slog("Target Enemy 1");
-			SDL_Delay(500);
-		}
-
-		if (keys[SDL_SCANCODE_2] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member2;
-			slog("Target Enemy 2");
-			SDL_Delay(350);
-		}
-
-		if (keys[SDL_SCANCODE_3] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member3;
-			slog("Target Enemy 3");
-			SDL_Delay(350);
-		}
-
+		//Once in enemy targetting mode, pick an enemy 1 - 3
+		SelectEnemyMember(self);
+		PickTargetType(self);
 	}
 }
 
@@ -326,47 +349,39 @@ void WaterMage_Think(Entity *self)
 			SelectTeamMember(self);
 		}
 
-
 		//When you have a target and it's an enemy, attack it
 		if (self->target != NULL && self->target->EntType == Enemy)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
 				//Do Move 1
-				slog("Water Mage used Attack 1");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				self->target = NULL;
-				self->TargetMode = Default;
-				slog("WM Turn End");
-				SDL_Delay(350);
+				slog("Water Mage used Splash");
+				self->target->health -= 15;
+				self->mana -= 10;
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_2])
 			{
 				//Do Move 2
-				slog("Water Mage used Attack 2");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				self->target = NULL;
-				self->TargetMode = Default;
-				slog("WM Turn End");
-				SDL_Delay(350);
+				self->target == NULL; 
+				SelectTeamMember(self);
+				self->target->health += 20;
+				self->mana -= 20;
+				slog("Water Mage used heal");
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_3])
 			{
 				//Do Move 3
-				slog("Water Mage used Attack 3");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				self->target = NULL;
-				self->TargetMode = Default;
-				slog("WM Turn End");
-				SDL_Delay(350);
+				self->FriendlyTeam->Member1->health += 10;
+				self->FriendlyTeam->Member2->health += 10;
+				self->FriendlyTeam->Member3->health += 10;
+				slog("Water Mage used Mega Heal");
+				EndTurn(self);
 			}
 		}
-
 
 		//Once in enemy targetting mode, pick an enemy 1 - 3
 		SelectEnemyMember(self);
@@ -381,59 +396,53 @@ void EarthMage_Think(Entity *self)
 	keys = SDL_GetKeyboardState(NULL);
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
+		//If I'm targetting a teammate,
+		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
+		{
+			HandleInventory(self);
+		}
 
-		if (self->target != NULL)
+		//Targetting Friendly Member
+		if (self->target == NULL && self->TargetMode == Team)
+		{
+			SelectTeamMember(self);
+		}
+
+		//When you have a target and it's an enemy, attack it
+		if (self->target != NULL && self->target->EntType == Enemy)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
 				//Do Move 1
-				slog("You attacked Enemy 1");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Earth Mage used Rock Throw");
+				self->target->health -= 20;
+				self->mana -= 15;
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_2])
 			{
 				//Do Move 2
-				slog("You attacked Enemy 2");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Earth Mage Shields themselves");
+				self->ShieldHP += 30;
+				self->mana -= 40;
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_3])
 			{
 				//Do Move 3
-				slog("You attacked Enemy 3");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				self->ShieldHP += 40;
+				self->health += 25;
+				self->mana -= 60;
+				slog("Earth mages uses Iron Will");
+				EndTurn(self);
 			}
 		}
 
-		//The following select a target if you don't have one
-		if (keys[SDL_SCANCODE_1] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member1;
-			slog("Target Enemy 1");
-			SDL_Delay(500);
-		}
-
-		if (keys[SDL_SCANCODE_2] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member2;
-			slog("Target Enemy 2");
-			SDL_Delay(350);
-		}
-
-		if (keys[SDL_SCANCODE_3] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member3;
-			slog("Target Enemy 3");
-			SDL_Delay(350);
-		}
-
+		//Once in enemy targetting mode, pick an enemy 1 - 3
+		SelectEnemyMember(self);
+		PickTargetType(self);
 	}
 }
 
@@ -443,59 +452,90 @@ void WindMage_Think(Entity *self)
 	keys = SDL_GetKeyboardState(NULL);
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
+		//If I'm targetting a teammate,
+		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
+		{
+			HandleInventory(self);
+		}
 
-		if (self->target != NULL)
+		//Targetting Friendly Member
+		if (self->target == NULL && self->TargetMode == Team)
+		{
+			SelectTeamMember(self);
+		}
+
+		//When you have a target and it's an enemy, attack it
+		if (self->target != NULL && self->target->EntType == Enemy)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
 				//Do Move 1
-				slog("You attacked Enemy 1");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Wind Mage used Gust");
+				self->target->health -= 10;
+				self->mana -= 10;
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_2])
 			{
 				//Do Move 2
-				slog("You attacked Enemy 2");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Wind Mage uses Whirlwind");
+				self->TargetTeam->Member1->health -= 10;
+				self->TargetTeam->Member2->health -= 10;
+				self->TargetTeam->Member3->health -= 10;
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_3])
 			{
 				//Do Move 3
-				slog("You attacked Enemy 3");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Wind mage uses plunder");
+				int random = gfc_random() * 5;
+				slog("%d", random);
+				
+				if (random == 0)
+				{
+					slog("Sucks to suck you got nothing boi");
+					self->mana += 15;
+				}
+				else if (random == 1)
+				{
+					slog("You found a health pot");
+					self->Inventory->ItemSlot1->quantity += 1;
+					self->mana -= 40;
+				}
+				else if (random == 2)
+				{
+					slog("You found a mana pot");
+					self->Inventory->ItemSlot2->quantity += 1;
+					self->mana -= 40;
+				}
+				else if (random == 3)
+				{
+					slog("You found a limit pot");
+					self->Inventory->ItemSlot3->quantity += 1;
+					self->mana -= 40;
+				}
+				else if (random == 4)
+				{
+					slog("You found a mix pot");
+					self->Inventory->ItemSlot4->quantity += 1;
+					self->mana -= 40;
+				}
+				else if (random == 5)
+				{
+					slog("You found a Shield pot");
+					self->Inventory->ItemSlot5->quantity += 1;
+					self->mana -= 40;
+				}
+
+				EndTurn(self);
 			}
 		}
 
-		//The following select a target if you don't have one
-		if (keys[SDL_SCANCODE_1] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member1;
-			slog("Target Enemy 1");
-			SDL_Delay(500);
-		}
-
-		if (keys[SDL_SCANCODE_2] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member2;
-			slog("Target Enemy 2");
-			SDL_Delay(350);
-		}
-
-		if (keys[SDL_SCANCODE_3] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member3;
-			slog("Target Enemy 3");
-			SDL_Delay(350);
-		}
-
+		//Once in enemy targetting mode, pick an enemy 1 - 3
+		SelectEnemyMember(self);
+		PickTargetType(self);
 	}
 }
 
@@ -505,59 +545,54 @@ void IceMage_Think(Entity *self)
 	keys = SDL_GetKeyboardState(NULL);
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
+		//If I'm targetting a teammate,
+		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
+		{
+			HandleInventory(self);
+		}
 
-		if (self->target != NULL)
+		//Targetting Friendly Member
+		if (self->target == NULL && self->TargetMode == Team)
+		{
+			SelectTeamMember(self);
+		}
+
+		//When you have a target and it's an enemy, attack it
+		if (self->target != NULL && self->target->EntType == Enemy)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
 				//Do Move 1
-				slog("You attacked Enemy 1");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Ice Mage used Ice Spike");
+				self->target->health -= 20;
+				self->mana -= 15;
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_2])
 			{
 				//Do Move 2
-				slog("You attacked Enemy 2");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Ice Mage used Blizzard");
+				self->TargetTeam->Member1->health -= 25;
+				self->TargetTeam->Member2->health -= 25;
+				self->TargetTeam->Member3->health -= 25;
+				self->mana -= 30;
+				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_3])
 			{
 				//Do Move 3
-				slog("You attacked Enemy 3");
-				self->TurnActive = 0;
-				self->TurnComplete = 1;
-				SDL_Delay(350);
+				slog("Ice Mage used Death spike");
+				self->target->health -= 50;
+				self->mana -= 60;
+				EndTurn(self);
 			}
 		}
 
-		//The following select a target if you don't have one
-		if (keys[SDL_SCANCODE_1] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member1;
-			slog("Target Enemy 1");
-			SDL_Delay(500);
-		}
-
-		if (keys[SDL_SCANCODE_2] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member2;
-			slog("Target Enemy 2");
-			SDL_Delay(350);
-		}
-
-		if (keys[SDL_SCANCODE_3] && self->target == NULL)
-		{
-			self->target = self->TargetTeam->Member3;
-			slog("Target Enemy 3");
-			SDL_Delay(350);
-		}
-
+		//Once in enemy targetting mode, pick an enemy 1 - 3
+		SelectEnemyMember(self);
+		PickTargetType(self);
 	}
 }
 
@@ -576,7 +611,7 @@ Entity *Mage_Team()
 	team->TurnActive = 0;
 	team->TurnComplete = 0;
 
-	team->Member1 = water_mage_spawn();
+	team->Member1 = wind_mage_spawn();
 	team->Member2 = water_mage_spawn();
 	team->Member3 = earth_mage_spawn();
 
@@ -809,21 +844,21 @@ void SelectEnemyMember(Entity *self)
 	if (keys[SDL_SCANCODE_1] && self->target == NULL && self->TargetMode == EnemyT)
 	{
 		self->target = self->TargetTeam->Member1;
-		slog("Water mage Target Enemy 1");
+		slog("Mage Target Enemy 1");
 		SDL_Delay(500);
 	}
 
 	if (keys[SDL_SCANCODE_2] && self->target == NULL && self->TargetMode == EnemyT)
 	{
 		self->target = self->TargetTeam->Member2;
-		slog("Water mage Target Enemy 2");
+		slog("Mage Target Enemy 2");
 		SDL_Delay(350);
 	}
 
 	if (keys[SDL_SCANCODE_3] && self->target == NULL && self->TargetMode == EnemyT)
 	{
 		self->target = self->TargetTeam->Member3;
-		slog("Water mage Target Enemy 3");
+		slog("Mage Target Enemy 3");
 		SDL_Delay(350);
 	}
 }
@@ -851,5 +886,16 @@ void PickTargetType(Entity *self)
 	{
 		self->TargetMode = Default;
 		self->target = NULL;
+		slog("Target clear and mode clear");
 	}
+}
+
+void EndTurn(Entity *self)
+{
+	self->TurnActive = 0;
+	self->TurnComplete = 1;
+	self->target = NULL;
+	self->TargetMode = Default;
+	slog("Mage Turn End");
+	SDL_Delay(350);
 }

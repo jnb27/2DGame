@@ -63,7 +63,6 @@ int main(int argc, char * argv[])
 	team2->TargetTeam = team1;
 
 	//water_monster_spawn();
-	
 
 
 	/*main game loop*/
