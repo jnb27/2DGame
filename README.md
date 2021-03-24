@@ -1,30 +1,16 @@
-# gameframework2d (GF2D)
-a collection of utlitity functions designed to facilitate creating 2D games with SDL2
-This project is specifically intended to function as an educational tool for my students taking 2D Game Programming.
+# Mage Gauntlet !
 
-Currently the project is in a WIP state, however it is functional with sample projects showcasing rudimentary scrolling shooters,
-platformers, and adventure games.
+Welcome to my game called Mage Gauntlet (name is subject to change). Essentially there are a few controls to be aware of for this game to work out properly. 
 
-The master branch is kept deliberately minimal to allow students to build out systems as they are learning.
-Other branches have more complete system: Collisions, menus, input abstraction.
+The game starts by having your character team spawn with 3 people, these guys all have 3 individual spells. On the opposing side there will be monsters who will attack your characters randomly. 
 
-# Build Process
+After a few waves you'll get the chance to shop before facing a boss who has a unique moveset of their own. 
 
-Before you can build the example code we are providing for you, you will need to obtain the libraries required
-by the source code
- - SDL2
- - SDL2_image
- - SDL2_mixer
- - SDL2_ttf
-There are additional sub modules that are needed for this project to work as well, but they can be pulled right from within the project.
-Performable from the following steps from the root of the cloned git repository within a terminal. 
+# For the Gameplay
 
-Make sure you fetch submodules: `git submodule update --init --recursive`
-Go into each submodule's src directory and type:
-`make`
-`make static`
+While it's your turn, press 6 to enter the enemy targetting system. While in this mode you can press numbers 1 - 3 in order to select your target, then you can press 1 - 3 again to select what move you'd like to use. 
 
-Once each submodule has been made you can go into the base project src folder anre simply type:
-`make`
+To use your Inventory, you can press 7 to enter it. Once in your inventory numbers 1 - 3 will let you choose which team member you'd like to use your item on. Once that is selected you can press numbers 1 - 5 to select which item from your inventory you'd like to use. 
 
-You should now have a `gf2d` binary within the root of your git repository. Executing this will start your game.
+That should be about it for controls, if anything new updates will appear in the readme. 
+
