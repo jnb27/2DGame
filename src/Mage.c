@@ -39,6 +39,7 @@ Entity *fire_mage_spawn()
 	mage->position.x = 240;
 	mage->position.y = 240;
 
+	mage->InventoryLock = 0;
 	mage->TargetMode = Default;
 	mage->think = FireMage_Think;
 	mage->target = NULL;
@@ -79,6 +80,7 @@ Entity *water_mage_spawn()
 	mage->position.x = 240;
 	mage->position.y = 120;
 
+	mage->InventoryLock = 0;
 	mage->TargetMode = Default;
 	mage->TargetMode = Default;
 	mage->think = WaterMage_Think;
@@ -118,6 +120,7 @@ Entity *earth_mage_spawn()
 	mage->position.x = 240;
 	mage->position.y = 360;
 
+	mage->InventoryLock = 0;
 	mage->TargetMode = Default;
 	mage->think = EarthMage_Think;
 	mage->ElementType = Earth;
@@ -156,6 +159,7 @@ Entity *wind_mage_spawn()
 	mage->position.x = 240;
 	mage->position.y = 240;
 
+	mage->InventoryLock = 0;
 	mage->TargetMode = Default;
 	mage->think = WindMage_Think;
 	mage->ElementType = Wind;
@@ -194,6 +198,7 @@ Entity *ice_mage_spawn()
 	mage->position.x = 240;
 	mage->position.y = 240;
 
+	mage->InventoryLock = 0;
 	mage->DoubleDMG = 1;
 	mage->TargetMode = Default;
 	mage->think = IceMage_Think;
@@ -217,34 +222,6 @@ Entity *ice_mage_spawn()
 void MageActive_think(Entity *self)
 {
 	if (!self)return;
-	if (self->TurnActive == 1 && self->TurnComplete == 0)
-	{
-		if (!self)return;
-		keys = SDL_GetKeyboardState(NULL);
-		if (keys[SDL_SCANCODE_D])
-		{
-			self->position.x += 3;
-		}
-		if (keys[SDL_SCANCODE_A])
-		{
-			self->position.x -= 3;
-		}
-		if (keys[SDL_SCANCODE_W])
-		{
-			self->position.y -= 3;
-		}
-		if (keys[SDL_SCANCODE_S])
-		{
-			self->position.y += 3;
-		}
-
-		if (keys[SDL_SCANCODE_P])
-		{
-			self->TurnActive = 0;
-			self->TurnComplete = 1;
-			SDL_Delay(350);
-		}
-	}
 }
 void MageIdle_think(Entity *self)
 {
@@ -267,6 +244,11 @@ void FireMage_Think(Entity *self)
 		if (self->target == NULL && self->TargetMode == Team)
 		{
 			SelectTeamMember(self);
+		}
+
+		if (self->TargetMode == Shop)
+		{
+			Shopping(self);
 		}
 
 		//When you have a target and it's an enemy, attack it
@@ -349,6 +331,11 @@ void WaterMage_Think(Entity *self)
 			SelectTeamMember(self);
 		}
 
+		if (self->TargetMode == Shop)
+		{
+			Shopping(self);
+		}
+
 		//When you have a target and it's an enemy, attack it
 		if (self->target != NULL && self->target->EntType == Enemy)
 		{
@@ -408,6 +395,11 @@ void EarthMage_Think(Entity *self)
 			SelectTeamMember(self);
 		}
 
+		if (self->TargetMode == Shop)
+		{
+			Shopping(self);
+		}
+
 		//When you have a target and it's an enemy, attack it
 		if (self->target != NULL && self->target->EntType == Enemy)
 		{
@@ -450,6 +442,17 @@ void WindMage_Think(Entity *self)
 {
 	if (!self)return;
 	keys = SDL_GetKeyboardState(NULL);
+
+	if (keys[SDL_SCANCODE_9])
+	{
+		self->TargetTeam->Member1->health -= 999;
+		self->TargetTeam->Member2->health -= 999;
+		self->TargetTeam->Member3->health -= 999;
+		self->TargetTeam->deaths += 15;
+		slog("Team wiped");
+		SDL_Delay(150);
+	}
+
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
 		//If I'm targetting a teammate,
@@ -462,6 +465,11 @@ void WindMage_Think(Entity *self)
 		if (self->target == NULL && self->TargetMode == Team)
 		{
 			SelectTeamMember(self);
+		}
+
+		if ( self->TargetMode == Shop)
+		{
+			Shopping(self);
 		}
 
 		//When you have a target and it's an enemy, attack it
@@ -557,6 +565,11 @@ void IceMage_Think(Entity *self)
 			SelectTeamMember(self);
 		}
 
+		if ( self->TargetMode == Shop)
+		{
+			Shopping(self);
+		}
+
 		//When you have a target and it's an enemy, attack it
 		if (self->target != NULL && self->target->EntType == Enemy)
 		{
@@ -616,6 +629,11 @@ Entity *Mage_Team()
 	team->Member3 = earth_mage_spawn();
 
 	team->Inventory = InventorySpawn();
+	team->gold = 200;
+
+	team->Member1->gold = team->gold;
+	team->Member2->gold = team->gold;
+	team->Member3->gold = team->gold;
 
 	team->Member1->Inventory = team->Inventory;
 	team->Member2->Inventory = team->Inventory;
@@ -684,6 +702,13 @@ void MageTeam_Think(Entity *self)
 
 void HandleInventory(Entity *self)
 {
+	if (self->InventoryLock = 1)
+	{
+		slog("Inventory Disabled !");
+		self->target = NULL;
+		self->TargetMode = Default;
+	}
+
 	if (self->Inventory->ItemSlot1->quantity < 1 && self->Inventory->ItemSlot2->quantity < 1 && self->Inventory->ItemSlot3->quantity < 1 && self->Inventory->ItemSlot4->quantity < 1 && self->Inventory->ItemSlot5->quantity < 1)
 	{
 		//If you have no items, then do other stuff.
@@ -844,6 +869,7 @@ void SelectEnemyMember(Entity *self)
 	if (keys[SDL_SCANCODE_1] && self->target == NULL && self->TargetMode == EnemyT)
 	{
 		self->target = self->TargetTeam->Member1;
+		slog("%i", self->target->health);
 		slog("Mage Target Enemy 1");
 		SDL_Delay(500);
 	}
@@ -890,12 +916,122 @@ void PickTargetType(Entity *self)
 	}
 }
 
+void Shopping(Entity *self)
+{
+	if (keys[SDL_SCANCODE_1] && self->target != NULL && self->TargetMode == Shop)
+	{
+		self->Inventory->ItemSlot1->quantity += 1;
+		self->gold -= self->target->gold;
+		slog("%i", self->gold);
+		self->TurnActive = 0;
+		self->TurnComplete = 1;
+		self->target = NULL;
+		self->TargetMode = Default;
+		slog("You purchased HP");
+		SDL_Delay(500);
+	}
+
+	if (keys[SDL_SCANCODE_1] && self->target == NULL && self->TargetMode == Shop)
+	{
+		self->target = self->TargetTeam->Member1;
+		//slog("%i", self->target->health);
+		slog("Mage Target HP");
+		SDL_Delay(500);
+	}
+
+	if (keys[SDL_SCANCODE_2] && self->target != NULL && self->TargetMode == Shop)
+	{
+		self->Inventory->ItemSlot2->quantity += 1;
+		self->gold -= self->target->gold;
+		slog("%i", self->gold);
+		self->TurnActive = 0;
+		self->TurnComplete = 1;
+		self->target = NULL;
+		self->TargetMode = Default;
+		slog("You purchased MP");
+		SDL_Delay(500);
+	}
+
+	if (keys[SDL_SCANCODE_2] && self->target == NULL && self->TargetMode == Shop)
+	{
+		self->target = self->TargetTeam->Member2;
+		slog("Mage Target Mana Potion");
+		SDL_Delay(350);
+	}
+
+	if (keys[SDL_SCANCODE_3] && self->target != NULL && self->TargetMode == Shop)
+		{
+			self->Inventory->ItemSlot3->quantity += 1;
+			self->gold -= self->target->gold;
+			slog("%i", self->gold);
+			self->TurnActive = 0;
+			self->TurnComplete = 1;
+			self->target = NULL;
+			self->TargetMode = Default;
+			slog("You purchased Limit");
+			SDL_Delay(500);
+		}
+
+	if (keys[SDL_SCANCODE_3] && self->target == NULL && self->TargetMode == Shop)
+	{
+		self->target = self->TargetTeam->Member3;
+		slog("Mage Target Limit");
+
+		SDL_Delay(350);
+	}
+
+	if (keys[SDL_SCANCODE_4] && self->target != NULL && self->TargetMode == Shop)
+	{
+		self->Inventory->ItemSlot4->quantity += 1;
+		self->gold -= self->target->gold;
+		slog("%i", self->gold);
+		self->TurnActive = 0;
+		self->TurnComplete = 1;
+		self->target = NULL;
+		self->TargetMode = Default;
+		slog("You purchased Mix");
+		SDL_Delay(500);
+	}
+
+	if (keys[SDL_SCANCODE_4] && self->target == NULL && self->TargetMode == Shop)
+	{
+		self->target = self->TargetTeam->Member4;
+		slog("Mage Target Mix Potion");
+		SDL_Delay(350);
+	}
+
+	if (keys[SDL_SCANCODE_5] && self->target != NULL && self->TargetMode == Shop)
+	{
+		self->Inventory->ItemSlot5->quantity += 1;
+		self->gold -= self->target->gold;
+		slog("%i", self->gold);
+		self->TurnActive = 0;
+		self->TurnComplete = 1;
+		self->target = NULL;
+		self->TargetMode = Default;
+		slog("You purchased Shield Potion");
+		SDL_Delay(500);
+	}
+
+	if (keys[SDL_SCANCODE_5] && self->target == NULL && self->TargetMode == Shop)
+	{
+		self->target = self->TargetTeam->Member5;
+		slog("Mage Target Shield Potion");
+		SDL_Delay(350);
+	}
+
+	
+	
+}
+
 void EndTurn(Entity *self)
 {
 	self->TurnActive = 0;
 	self->TurnComplete = 1;
 	self->target = NULL;
 	self->TargetMode = Default;
+	self->InventoryLock = 0;
 	slog("Mage Turn End");
 	SDL_Delay(350);
 }
+

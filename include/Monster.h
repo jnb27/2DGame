@@ -16,7 +16,14 @@ Entity *earth_monster_spawn();
 Entity *wind_monster_spawn();
 
 Entity *ice_monster_spawn();
+Entity *RandomSpawn();
+
+Entity *Boss1_Spawn();
 
 Entity *Monster_Team();
+
+Entity *BossTeam();
+
+void BossThink2(Entity *self);
 
 #endif

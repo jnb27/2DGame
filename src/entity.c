@@ -220,4 +220,10 @@ int checkCollision(Entity *self, Entity *other)
 	return 0;
 }
 
+void AdjustPositions(Entity *self)
+{
+	self->Member1->position.y = 480;
+	self->Member2->position.y = 360;
+	self->Member3->position.y = 240;
+}
 /*eol@eof*/

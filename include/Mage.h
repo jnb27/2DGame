@@ -15,4 +15,6 @@ Entity *earth_mage_spawn();
 
 Entity *Mage_Team();
 
+void Shopping(Entity *self);
+
 #endif

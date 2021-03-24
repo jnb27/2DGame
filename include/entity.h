@@ -32,7 +32,8 @@ enum TargetSys
 {
 	Team,
 	EnemyT, 
-	Default
+	Default,
+	Shop
 };
 
 typedef struct Entity_s
@@ -55,6 +56,8 @@ typedef struct Entity_s
 	int			ShieldHP;
 	int			DoubleDMG;
 
+	int			deaths;
+	int			InventoryLock;
 	int			quantity;
 	int			gold;
 
@@ -69,6 +72,9 @@ typedef struct Entity_s
 	struct		Entity_s *Member1;
 	struct		Entity_s *Member2;
 	struct		Entity_s *Member3;
+	struct		Entity_s *Member4;
+	struct		Entity_s *Member5;
+
 	struct		Entity_s *TargetTeam;
 	struct		Entity_s *FriendlyTeam;
 
@@ -131,5 +137,7 @@ void entity_draw(Entity *ent);
 void entity_manager_think_all();
 
 void test_ent();
+
+void AdjustPositions(Entity *self);
 
 #endif

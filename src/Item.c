@@ -36,6 +36,8 @@ Entity *HealthPot()
 
 }
 
+
+
 Entity *ManaPot()
 {
 	Entity *MP;
@@ -99,4 +101,100 @@ Entity *ShieldPotion()
 	SP->ShieldHP = 35;
 
 	return SP;
+}
+
+Entity *ShopHP()
+{
+	Entity *HP;
+	HP = entity_new();
+	if (!HP)
+	{
+		slog("HP broke");
+	}
+
+	HP->quantity = 10;
+	HP->gold = 10;
+	HP->health = 25;
+	HP->sprite = gf2d_sprite_load_image("images/HP.png");
+	HP->position.x = 700;
+	HP->position.y = 120;
+	return HP;
+
+}
+
+Entity *ShopMana()
+{
+	Entity *HP;
+	HP = entity_new();
+	if (!HP)
+	{
+		slog("HP broke");
+	}
+
+	HP->quantity = 10;
+	HP->gold = 15;
+	HP->mana = 25;
+	HP->sprite = gf2d_sprite_load_image("images/MP.png");
+	HP->position.x = 700;
+	HP->position.y = 200;
+	return HP;
+
+}
+
+Entity *ShopLimit()
+{
+	Entity *HP;
+	HP = entity_new();
+	if (!HP)
+	{
+		slog("HP broke");
+	}
+
+	HP->quantity = 10;
+	HP->gold = 10;
+	HP->limit = 25;
+	HP->sprite = gf2d_sprite_load_image("images/LIMIT.png");
+	HP->position.x = 700;
+	HP->position.y = 280;
+	return HP;
+
+}
+
+Entity *ShopMix()
+{
+	Entity *HP;
+	HP = entity_new();
+	if (!HP)
+	{
+		slog("HP broke");
+	}
+
+	HP->quantity = 10;
+	HP->gold = 10;
+	HP->health = 25;
+	HP->mana = 25;
+	HP->sprite = gf2d_sprite_load_image("images/MIX.png");
+	HP->position.x = 700;
+	HP->position.y = 360;
+	return HP;
+
+}
+
+Entity *ShopShield()
+{
+	Entity *HP;
+	HP = entity_new();
+	if (!HP)
+	{
+		slog("HP broke");
+	}
+
+	HP->quantity = 10;
+	HP->gold = 10;
+	HP->ShieldHP = 25;
+	HP->sprite = gf2d_sprite_load_image("images/SHIELD.png");
+	HP->position.x = 700;
+	HP->position.y = 440;
+	return HP;
+
 }
