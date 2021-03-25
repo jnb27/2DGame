@@ -102,7 +102,10 @@ int main(int argc, char * argv[])
 
 		if (team2->deaths >= 45 && Bossflip == 0)
 		{
+
 			team2 = BossTeam();
+			team1->TargetTeam = team2;
+			team2->TargetTeam = team1;
 			Bossflip = 1;
 		}
 		if (keys[SDL_SCANCODE_J] && Bossflip == 1)

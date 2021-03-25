@@ -26,7 +26,7 @@ Entity *Boss1_Spawn()
 	monster->position.x = 600;
 	monster->position.y = 240;
 
-	monster->think = BossThink2;
+	monster->think = BossThink;
 	monster->EntType = Enemy;
 	monster->ElementType = Fire;
 	monster->ActionPoints = 0;
