@@ -13,3 +13,4 @@ While it's your turn, press 6 to enter the enemy targetting system. While in thi
 To use your Inventory, you can press 7 to enter it. Once in your inventory numbers 1 - 3 will let you choose which team member you'd like to use your item on. Once that is selected you can press numbers 1 - 5 to select which item from your inventory you'd like to use. 
 
 That should be about it for controls, if anything new updates will appear in the readme. 
+
