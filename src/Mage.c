@@ -54,6 +54,11 @@ Entity *fire_mage_spawn()
 	mage->TurnActive = 0;
 	mage->TurnComplete = 0;
 
+	mage->SkillLevel1 = 1;
+	mage->SkillLevel2 = 1;
+	mage->SkillLevel3 = 1;
+	mage->SkillLevel4 = 1;
+	mage->SkillLevel5 = 1;
 	//Moveset, High Damage High costs medium hp
 	//Move 1 : 20 Damage for 10 Mana
 	//Move 2 : Buff Next Attack for Double damage on next turn 
@@ -94,6 +99,12 @@ Entity *water_mage_spawn()
 	mage->limit = 0;
 	mage->TurnActive = 0;
 
+	mage->SkillLevel1 = 1;
+	mage->SkillLevel2 = 1;
+	mage->SkillLevel3 = 1;
+	mage->SkillLevel4 = 1;
+	mage->SkillLevel5 = 1;
+
 	//High Healing Kit, High HP, High Mana, Next to no damage
 	//Move 1: Heal Ally 
 	//Move 2: Damage Enemy 
@@ -133,6 +144,11 @@ Entity *earth_mage_spawn()
 	mage->limit = 0;
 	mage->TurnActive = 0;
 
+	mage->SkillLevel1 = 1;
+	mage->SkillLevel2 = 1;
+	mage->SkillLevel3 = 1;
+	mage->SkillLevel4 = 1;
+	mage->SkillLevel5 = 1;
 	//Shields ? Maybe debuffs or High HP, Low damage, Low costs
 	//Move 1: Damage Enemy
 	//Move 2: Shield self
@@ -172,6 +188,11 @@ Entity *wind_mage_spawn()
 	mage->limit = 0;
 	mage->TurnActive = 0;
 
+	mage->SkillLevel1 = 1;
+	mage->SkillLevel2 = 1;
+	mage->SkillLevel3 = 1;
+	mage->SkillLevel4 = 1;
+	mage->SkillLevel5 = 1;
 	//Low HP, Low costs, Multi hit or random damage
 	//Move 1: Give someone an extra turn might be hard
 	//Move 2: Damage enemy
@@ -211,6 +232,11 @@ Entity *ice_mage_spawn()
 	mage->limit = 0;
 	mage->TurnActive = 0;
 
+	mage->SkillLevel1 = 1;
+	mage->SkillLevel2 = 1;
+	mage->SkillLevel3 = 1;
+	mage->SkillLevel4 = 1;
+	mage->SkillLevel5 = 1;
 	//Low Hp, High Cost, Extremely High Damage Glass cannon
 	//Move 1: Damage enemy 
 	//Move 2: Stop an enemy from taking a turn 
@@ -258,7 +284,17 @@ void FireMage_Think(Entity *self)
 			{
 				//Do Move 1
 				slog("Fire Mage used Fireball");
-				self->mana -= 10;
+
+				if (self->SkillLevel1 > 1)
+				{
+					self->mana -= 10 - (self->SkillLevel1);
+				}
+				else
+				{
+					self->mana -= 10;
+				}
+
+
 				if (self->target->ElementType == Fire)
 				{
 					self->target->health = (self->target->health - (15 * self->DoubleDMG));

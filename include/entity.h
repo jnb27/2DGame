@@ -61,6 +61,12 @@ typedef struct Entity_s
 	int			quantity;
 	int			gold;
 
+	int			SkillLevel1;
+	int			SkillLevel2;
+	int			SkillLevel3;
+	int			SkillLevel4;
+	int			SkillLevel5;
+
 	struct		Entity_s *Inventory;
 	struct		Entity_s *ItemSlot1;
 	struct		Entity_s *ItemSlot2;
