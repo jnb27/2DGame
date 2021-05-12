@@ -24,6 +24,10 @@ int main(int argc, char * argv[])
 	/*variable declarations*/
 	int done = 0;
 	int MenuActive = 0;
+	int levelJump1 = 0;
+	int levelJump2 = 0;
+	int levelJump3 = 0;
+	
 	const Uint8 * keys;
 	Level *level;
 	Entity *playerT;
@@ -63,6 +67,7 @@ int main(int argc, char * argv[])
 	Sound *BGM = gfc_sound_load("music/wisdom.mp3", 0.5, 1);
 	mouse = gf2d_sprite_load_all("images/pointer.png", 32, 32, 16);
 	level = level_load("levels/exampleLevel.json");
+	slog("%d", level->Biome);
 
 	PM1 = entity_new();
 	PM1->sprite = gf2d_sprite_load_image("images/Unholy/PM1/PM1-100.png");
@@ -83,8 +88,10 @@ int main(int argc, char * argv[])
 	//test_ent();
 	//earth_mage_spawn();
 	team1 = Mage_Team();
+	team1->Biome = 1;
 	//team2 = BossTeam();
 	team2 = Monster_Team();
+	team2->Biome = 1;
 
 	team1->TurnActive = 1;
 	team1->TargetTeam = team2;
@@ -117,6 +124,34 @@ int main(int argc, char * argv[])
 				team2->TargetTeam = team1;
 				Bossflip = 1;
 			}
+
+			if (team2->deaths >= 10 && team2->deaths <= 20 && levelJump1 == 0)
+			{
+				//level_free(level);
+				//Air
+				level = level_load("levels/exampleLevel2.json");
+				levelJump1 = 1;
+				team1->Biome = 2;
+			}
+
+			if (team2->deaths >= 21 && team2->deaths <= 30 && levelJump2 == 0)
+			{
+				//level_free(level);
+				//Fire
+				level = level_load("levels/exampleLevel3.json");
+				levelJump2 = 1;
+				team1->Biome = 3;
+			}
+
+			if (team2->deaths >= 31 && team2->deaths <= 40 && levelJump3 == 0)
+			{
+				//level_free(level);
+				//Earth
+				level = level_load("levels/exampleLevel4.json");
+				levelJump3 = 1;
+				team1->Biome = 4;
+			}
+
 			if (keys[SDL_SCANCODE_J] && Bossflip == 1)
 			{
 				entity_free(team2->Member1);

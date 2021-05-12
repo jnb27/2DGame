@@ -70,6 +70,8 @@ Level *level_load(const char *filename)
 			level->tileFPL);
 	}
 
+	sj_get_integer_value(sj_object_get_value(levelJS, "biome"), &level->Biome);
+
 	levelMap = sj_object_get_value(levelJS, "tileMap");
 	if (!levelMap)
 	{

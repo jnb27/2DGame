@@ -3,8 +3,11 @@
 #include "Mage.h"
 #include "Item.h"
 #include "gfc_audio.h"
+#include "simple_json.h"
 
 const Uint8 *keys;
+
+void Movement(Entity *self);
 
 void MageTeam_Think(Entity *self);
 void MageActive_think(Entity *self);
@@ -39,17 +42,51 @@ void EndTurn(Entity *self);
 void MasteryCheck(Entity *self, int SkillCheck);
 
 
-
 Entity *fire_mage_spawn()
 {
 	Entity *mage;
+	SJson *json, *MageStats;
+	const char *filename = ("characters/Mages.json");
+	const char *string;
 	mage = entity_new();
 	if (!mage)
 	{
 		slog("failed to create test");
 		return NULL;
 	}
-	mage->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+
+	if (!filename)
+	{
+		slog("filename is NULL, cannot load the level");
+		return NULL;
+	}
+	json = sj_load(filename);
+	if (!json)return NULL;
+
+	MageStats = sj_object_get_value(json, "Fire");
+	if (!MageStats)
+	{
+		slog("Mage json missing mage object");
+		sj_free(json);
+		return NULL;
+	}
+
+
+	//sj_get_integer_value(sj_object_get_value(MageStats, "positx"), &mage->position.x);
+	//sj_get_integer_value(sj_object_get_value(MageStats, "posity"), &mage->position.y);
+	sj_get_integer_value(sj_object_get_value(MageStats, "health"), &mage->health);
+	sj_get_integer_value(sj_object_get_value(MageStats, "mana"), &mage->mana);
+	sj_get_integer_value(sj_object_get_value(MageStats, "limit"), &mage->limit);
+
+	slog("%d", mage->health);
+	slog("%d", mage->mana);
+	slog("%d", mage->limit);
+	//slog("%d", mage->position.x);
+	//slog("%d", mage->position.y);
+	
+
+
+	mage->sprite = gf2d_sprite_load_all("images/enemies/FireMage.png", 122, 110, 4);
 	mage->frameRate = 0.1;
 	mage->frameCount = 8;
 	//mage->update = player_update;
@@ -67,9 +104,9 @@ Entity *fire_mage_spawn()
 
 	mage->DoubleDMG = 1;
 	mage->ActionPoints = 0;
-	mage->health = 100;
-	mage->mana = 100;
-	mage->limit = 0;
+	//mage->health = 100;
+	//mage->mana = 100;
+	//mage->limit = 0;
 	mage->TurnActive = 0;
 	mage->TurnComplete = 0;
 
@@ -93,12 +130,50 @@ Entity *water_mage_spawn()
 {
 	Entity *mage;
 	mage = entity_new();
+	SJson *json, *MageStats;
+	const char *filename = ("characters/Mages.json");
+	const char *string;
 	if (!mage)
 	{
 		slog("failed to create test");
 		return NULL;
 	}
-	mage->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+
+	if (!filename)
+	{
+		slog("filename is NULL, cannot load the level");
+		return NULL;
+	}
+	json = sj_load(filename);
+	if (!json)return NULL;
+
+	MageStats = sj_object_get_value(json, "Water");
+	if (!MageStats)
+	{
+		slog("Mage json missing mage object");
+		sj_free(json);
+		return NULL;
+	}
+
+
+	//sj_get_integer_value(sj_object_get_value(MageStats, "positx"), &mage->position.x);
+	//sj_get_integer_value(sj_object_get_value(MageStats, "posity"), &mage->position.y);
+	sj_get_integer_value(sj_object_get_value(MageStats, "health"), &mage->health);
+	sj_get_integer_value(sj_object_get_value(MageStats, "mana"), &mage->mana);
+	sj_get_integer_value(sj_object_get_value(MageStats, "limit"), &mage->limit);
+
+	slog("%d", mage->health);
+	slog("%d", mage->mana);
+	slog("%d", mage->limit);
+	//slog("%d", mage->position.x);
+	//slog("%d", mage->position.y);
+
+
+
+
+
+
+	mage->sprite = gf2d_sprite_load_all("images/enemies/WaterMage.png", 122, 110, 4);
 	mage->frameRate = 0.1;
 	mage->frameCount = 8;
 	//mage->update = player_update;
@@ -116,9 +191,9 @@ Entity *water_mage_spawn()
 
 	mage->DoubleDMG = 1;
 	mage->ActionPoints = 0;
-	mage->health = 100;
-	mage->mana = 100;
-	mage->limit = 0;
+	//mage->health = 100;
+	//mage->mana = 100;
+	//mage->limit = 0;
 	mage->TurnActive = 0;
 
 	mage->SkillLevel1 = 1;
@@ -148,12 +223,50 @@ Entity *earth_mage_spawn()
 {
 	Entity *mage;
 	mage = entity_new();
+	SJson *json, *MageStats;
+	const char *filename = ("characters/Mages.json");
+	const char *string;
 	if (!mage)
 	{
 		slog("failed to create test");
 		return NULL;
 	}
-	mage->sprite = gf2d_sprite_load_all("images/enemies/Earthmage.png", 85, 94, 4);
+
+
+	if (!filename)
+	{
+		slog("filename is NULL, cannot load the level");
+		return NULL;
+	}
+	json = sj_load(filename);
+	if (!json)return NULL;
+
+	MageStats = sj_object_get_value(json, "Earth");
+	if (!MageStats)
+	{
+		slog("Mage json missing mage object");
+		sj_free(json);
+		return NULL;
+	}
+
+
+	//sj_get_integer_value(sj_object_get_value(MageStats, "positx"), &mage->position.x);
+	//sj_get_integer_value(sj_object_get_value(MageStats, "posity"), &mage->position.y);
+	sj_get_integer_value(sj_object_get_value(MageStats, "health"), &mage->health);
+	sj_get_integer_value(sj_object_get_value(MageStats, "mana"), &mage->mana);
+	sj_get_integer_value(sj_object_get_value(MageStats, "limit"), &mage->limit);
+
+	slog("%d", mage->health);
+	slog("%d", mage->mana);
+	slog("%d", mage->limit);
+	//slog("%d", mage->position.x);
+	//slog("%d", mage->position.y);
+
+
+
+
+
+	mage->sprite = gf2d_sprite_load_all("images/enemies/EarthMage.png", 122, 110, 4);
 	mage->frameRate = 0.1;
 	mage->frameCount = 8;
 	//mage->update = player_update;
@@ -170,9 +283,9 @@ Entity *earth_mage_spawn()
 
 	mage->DoubleDMG = 1;
 	mage->ActionPoints = 0;
-	mage->health = 100;
-	mage->mana = 100;
-	mage->limit = 0;
+	//mage->health = 100;
+	//mage->mana = 100;
+	//mage->limit = 0;
 	mage->TurnActive = 0;
 
 	mage->SkillLevel1 = 1;
@@ -201,12 +314,49 @@ Entity *wind_mage_spawn()
 {
 	Entity *mage;
 	mage = entity_new();
+	SJson *json, *MageStats;
+	const char *filename = ("characters/Mages.json");
+	const char *string;
 	if (!mage)
 	{
 		slog("failed to create test");
 		return NULL;
 	}
-	mage->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+
+
+	if (!filename)
+	{
+		slog("filename is NULL, cannot load the level");
+		return NULL;
+	}
+	json = sj_load(filename);
+	if (!json)return NULL;
+
+	MageStats = sj_object_get_value(json, "Wind");
+	if (!MageStats)
+	{
+		slog("Mage json missing mage object");
+		sj_free(json);
+		return NULL;
+	}
+
+
+	//sj_get_integer_value(sj_object_get_value(MageStats, "positx"), &mage->position.x);
+	//sj_get_integer_value(sj_object_get_value(MageStats, "posity"), &mage->position.y);
+	sj_get_integer_value(sj_object_get_value(MageStats, "health"), &mage->health);
+	sj_get_integer_value(sj_object_get_value(MageStats, "mana"), &mage->mana);
+	sj_get_integer_value(sj_object_get_value(MageStats, "limit"), &mage->limit);
+
+	slog("%d", mage->health);
+	slog("%d", mage->mana);
+	slog("%d", mage->limit);
+	//slog("%d", mage->position.x);
+	//slog("%d", mage->position.y);
+
+
+
+
+	mage->sprite = gf2d_sprite_load_all("images/enemies/WindMage.png", 122, 110, 4);
 	mage->frameRate = 0.1;
 	mage->frameCount = 8;
 	//mage->update = player_update;
@@ -223,9 +373,9 @@ Entity *wind_mage_spawn()
 
 	mage->DoubleDMG = 1;
 	mage->ActionPoints = 0;
-	mage->health = 100;
-	mage->mana = 100;
-	mage->limit = 0;
+	//mage->health = 100;
+	//mage->mana = 100;
+	//mage->limit = 0;
 	mage->TurnActive = 0;
 
 	mage->SkillLevel1 = 1;
@@ -252,12 +402,49 @@ Entity *ice_mage_spawn()
 {
 	Entity *mage;
 	mage = entity_new();
+	SJson *json, *MageStats;
+	const char *filename = ("characters/Mages.json");
+	const char *string;
 	if (!mage)
 	{
 		slog("failed to create test");
 		return NULL;
 	}
-	mage->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+
+	if (!filename)
+	{
+		slog("filename is NULL, cannot load the level");
+		return NULL;
+	}
+	json = sj_load(filename);
+	if (!json)return NULL;
+
+	MageStats = sj_object_get_value(json, "Ice");
+	if (!MageStats)
+	{
+		slog("Mage json missing mage object");
+		sj_free(json);
+		return NULL;
+	}
+
+
+	//sj_get_integer_value(sj_object_get_value(MageStats, "positx"), &mage->position.x);
+	//sj_get_integer_value(sj_object_get_value(MageStats, "posity"), &mage->position.y);
+	sj_get_integer_value(sj_object_get_value(MageStats, "health"), &mage->health);
+	sj_get_integer_value(sj_object_get_value(MageStats, "mana"), &mage->mana);
+	sj_get_integer_value(sj_object_get_value(MageStats, "limit"), &mage->limit);
+
+	slog("%d", mage->health);
+	slog("%d", mage->mana);
+	slog("%d", mage->limit);
+	//slog("%d", mage->position.x);
+	//slog("%d", mage->position.y);
+
+
+
+
+
+	mage->sprite = gf2d_sprite_load_all("images/enemies/IceMage.png", 122, 110, 4);
 	mage->frameRate = 0.1;
 	mage->frameCount = 8;
 	//mage->update = player_update;
@@ -274,9 +461,9 @@ Entity *ice_mage_spawn()
 	mage->EntType = Party;
 
 	mage->ActionPoints = 0;
-	mage->health = 100;
-	mage->mana = 100;
-	mage->limit = 0;
+	//mage->health = 100;
+	//mage->mana = 100;
+	//mage->limit = 0;
 	mage->TurnActive = 0;
 
 	mage->SkillLevel1 = 1;
@@ -317,6 +504,7 @@ void FireMage_Think(Entity *self)
 	keys = SDL_GetKeyboardState(NULL);
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
+		Movement(self);
 		//If I'm targetting a teammate,
 		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
 		{
@@ -341,12 +529,24 @@ void FireMage_Think(Entity *self)
 			{
 				Fireball(self, self->target);
 				EndTurn(self);
+				if (self->FriendlyTeam->Biome == 3)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Fire mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 
 			if (keys[SDL_SCANCODE_2])
 			{
 				FlameBreath(self);
 				EndTurn(self);
+				if (self->FriendlyTeam->Biome == 3)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Fire mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 
 			if (keys[SDL_SCANCODE_3])
@@ -354,6 +554,12 @@ void FireMage_Think(Entity *self)
 				slog("Fire Mage used Phoenix Dance, Damage on next hit 2x");
 				self->DoubleDMG = 2;
 				EndTurn(self);
+				if (self->FriendlyTeam->Biome == 3)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Fire mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 		}
 
@@ -369,7 +575,7 @@ void WaterMage_Think(Entity *self)
 	keys = SDL_GetKeyboardState(NULL);
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
-		
+		Movement(self);
 		//If I'm targetting a teammate,
 		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
 		{
@@ -433,6 +639,7 @@ void EarthMage_Think(Entity *self)
 	keys = SDL_GetKeyboardState(NULL);
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
+		Movement(self);
 		//If I'm targetting a teammate,
 		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
 		{
@@ -457,6 +664,12 @@ void EarthMage_Think(Entity *self)
 			{
 				RockThrow(self, self->target);
 				EndTurn(self);
+				if (self->FriendlyTeam->Biome == 4)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Earth mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 
 			if (keys[SDL_SCANCODE_2])
@@ -467,6 +680,12 @@ void EarthMage_Think(Entity *self)
 				self->mana -= 40;
 				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
 				EndTurn(self);
+				if (self->FriendlyTeam->Biome == 4)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Earth mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 
 			if (keys[SDL_SCANCODE_3])
@@ -478,6 +697,12 @@ void EarthMage_Think(Entity *self)
 				slog("Earth mages uses Iron Will");
 				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
 				EndTurn(self);
+				if (self->FriendlyTeam->Biome == 4)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Earth mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 		}
 
@@ -492,18 +717,11 @@ void WindMage_Think(Entity *self)
 	if (!self)return;
 	keys = SDL_GetKeyboardState(NULL);
 
-	if (keys[SDL_SCANCODE_9])
-	{
-		self->TargetTeam->Member1->health -= 999;
-		self->TargetTeam->Member2->health -= 999;
-		self->TargetTeam->Member3->health -= 999;
-		self->TargetTeam->deaths += 15;
-		slog("Team wiped");
-		SDL_Delay(150);
-	}
+
 
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
+		Movement(self);
 		//If I'm targetting a teammate,
 		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
 		{
@@ -524,12 +742,29 @@ void WindMage_Think(Entity *self)
 		//When you have a target and it's an enemy, attack it
 		if (self->target != NULL && self->target->EntType == Enemy)
 		{
+			if (keys[SDL_SCANCODE_9])
+			{
+				self->target->health -= 999;
+				//self->TargetTeam->Member2->health -= 999;
+				//self->TargetTeam->Member3->health -= 999;
+				//self->TargetTeam->deaths += 15;
+				slog("Team wiped");
+				SDL_Delay(150);
+				EndTurn(self);
+			}
 			if (keys[SDL_SCANCODE_1])
 			{
 
 				gfc_sound_play(self->Audio1, 0, 0.5, 2, -1);
 				Gust(self, self->target);
 				EndTurn(self);
+
+				if (self->FriendlyTeam->Biome == 2)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Wind mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 
 			if (keys[SDL_SCANCODE_2])
@@ -539,6 +774,12 @@ void WindMage_Think(Entity *self)
 				Whirlwind(self);
 				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
 				EndTurn(self);
+				if (self->FriendlyTeam->Biome == 2)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Wind mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 
 			if (keys[SDL_SCANCODE_3])
@@ -547,6 +788,12 @@ void WindMage_Think(Entity *self)
 				slog("Wind mage uses plunder");
 				int random = gfc_random() * 5;
 				slog("%d", random);
+				if (self->FriendlyTeam->Biome == 2)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Wind mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 				
 				if (random == 0)
 				{
@@ -600,6 +847,7 @@ void IceMage_Think(Entity *self)
 	keys = SDL_GetKeyboardState(NULL);
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
 	{
+		Movement(self);
 		//If I'm targetting a teammate,
 		if (self->target != NULL && self->TargetMode == Team && self->target->EntType == Party)
 		{
@@ -625,6 +873,13 @@ void IceMage_Think(Entity *self)
 				IceSpike(self, self->target);
 				gfc_sound_play(self->Audio1, 0, 1, 2, -1);
 				EndTurn(self);
+
+				if (self->FriendlyTeam->Biome == 1)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Ice mage draws power from the surroundings.  --- HEALTH +15, MANA +10");
+				}
 			}
 
 			if (keys[SDL_SCANCODE_2])
@@ -632,6 +887,13 @@ void IceMage_Think(Entity *self)
 				Blizzard(self);
 				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
 				EndTurn(self);
+
+				if (self->FriendlyTeam->Biome == 1)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Ice mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 
 			if (keys[SDL_SCANCODE_3])
@@ -639,6 +901,13 @@ void IceMage_Think(Entity *self)
 				AbsZero(self, self->target);
 				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
 				EndTurn(self);
+
+				if (self->FriendlyTeam->Biome == 1)
+				{
+					self->health += 15;
+					self->mana += 10;
+					slog("Ice mage draws power from the surroundings. --- HEALTH +15, MANA +10");
+				}
 			}
 		}
 
@@ -664,8 +933,8 @@ Entity *Mage_Team()
 	team->TurnComplete = 0;
 
 	team->Member1 = wind_mage_spawn();
-	team->Member2 = water_mage_spawn();
-	team->Member3 = earth_mage_spawn();
+	team->Member2 = ice_mage_spawn();
+	team->Member3 = fire_mage_spawn();
 
 	team->Inventory = InventorySpawn();
 	team->gold = 200;
@@ -1086,24 +1355,28 @@ void SkillCheck(Entity *self, int Skill)
 			self->SkillLevel1 = 2;
 			self->SkillBoost = 10;
 			self->ManaReduction = 3;
+			slog("Skill Boost! Skill Level is 2, increased damage");
 		}
 		if (self->SkillEXP1 >= 50 && self->SkillEXP1 < 100)
 		{
 			self->SkillLevel1 = 3;
 			self->SkillBoost = 15;
 			self->ManaReduction = 6;
+			slog("Skill Boost! Skill Level is 3, increased damage, lower cost");
 		}
 		if (self->SkillEXP1 >= 100 && self->SkillEXP1 < 150)
 		{
 			self->SkillLevel1 = 4;
 			self->SkillBoost = 20;
 			self->ManaReduction = 10;
+			slog("Skill Boost! Skill is level 4, GREATLY increases damage, lower cost");
 		}
 		if (self->SkillEXP1 >= 150)
 		{
 			self->SkillLevel1 = 5;
 			self->SkillBoost = 30;
 			self->ManaReduction = 20;
+			slog("Skill Mastered. Minimal cost, Maximum Output");
 		}
 	}
 	if (Skill == 2)
@@ -1113,24 +1386,28 @@ void SkillCheck(Entity *self, int Skill)
 			self->SkillLevel2 = 2;
 			self->SkillBoost2 = 10;
 			self->ManaReduction2 = 3;
+			slog("Skill Boost! Skill Level is 2, increased damage");
 		}
 		if (self->SkillEXP2 >= 50 && self->SkillEXP2 < 100)
 		{
 			self->SkillLevel2 = 3;
 			self->SkillBoost2 = 15;
 			self->ManaReduction2 = 6;
+			slog("Skill Boost! Skill Level is 3, increased damage, lower cost");
 		}
 		if (self->SkillEXP2 >= 100 && self->SkillEXP2 < 150)
 		{
 			self->SkillLevel2 = 4;
 			self->SkillBoost2 = 20;
 			self->ManaReduction2 = 10;
+			slog("Skill Boost! Skill is level 4, GREATLY increases damage, lower cost");
 		}
 		if (self->SkillEXP2 >= 150)
 		{
 			self->SkillLevel2 = 5;
 			self->SkillBoost2 = 30;
 			self->ManaReduction2 = 20;
+			slog("Skill Mastered. Minimal cost, Maximum Output");
 		}
 	}
 	if (Skill == 3)
@@ -1140,6 +1417,7 @@ void SkillCheck(Entity *self, int Skill)
 			self->SkillLevel3 = 2;
 			self->SkillBoost3 = 10;
 			self->ManaReduction3 = 3;
+			slog("Skill Boost! Skill Level is 2, increased damage");
 
 		}
 		if (self->SkillEXP3 >= 50 && self->SkillEXP3 < 100)
@@ -1147,18 +1425,21 @@ void SkillCheck(Entity *self, int Skill)
 			self->SkillLevel3 = 3;
 			self->SkillBoost3 = 15;
 			self->ManaReduction3 = 6;
+			slog("Skill Boost! Skill Level is 3, increased damage, lower cost");
 		}
 		if (self->SkillEXP3 >= 100 && self->SkillEXP3 < 150)
 		{
 			self->SkillLevel3 = 4;
 			self->SkillBoost3 = 20;
 			self->ManaReduction3 = 10;
+			slog("Skill Boost! Skill is level 4, GREATLY increases damage, lower cost");
 		}
 		if (self->SkillEXP3 >= 150)
 		{
 			self->SkillLevel3 = 5;
 			self->SkillBoost3 = 30;
 			self->ManaReduction3 = 20;
+			slog("Skill Mastered. Minimal cost, Maximum Output");
 		}
 	}
 
@@ -1397,4 +1678,44 @@ void Whirlwind(Entity *self)
 	Gust(self, T3);
 	self->mana += self->ManaReduction2;
 	self->SkillEXP2 += 5;
+}
+
+void Movement(Entity *self)
+{
+	if (!self)return;
+	keys = SDL_GetKeyboardState(NULL);
+
+	if (keys[SDL_SCANCODE_W])
+	{
+		self->position.y -= 2;
+		if (self->position.y < 0)
+		{
+			self->position.y = 0;
+		}
+		
+	}
+	if (keys[SDL_SCANCODE_S])
+	{
+		self->position.y += 2;
+		if (self->position.y > 620)
+		{
+			self->position.y = 620;
+		}
+	}
+	if (keys[SDL_SCANCODE_A])
+	{
+		self->position.x -= 2;
+		if (self->position.x < 0)
+		{
+			self->position.x = 0;
+		}
+	}
+	if (keys[SDL_SCANCODE_D])
+	{
+		self->position.x += 2;
+		if (self->position.x > 1100)
+		{
+			self->position.x = 1100;
+		}
+	}
 }

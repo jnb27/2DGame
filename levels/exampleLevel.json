@@ -1,6 +1,7 @@
 {
     "level":
     {
+        "biome" : 1,
         "bgImage" : "images/backgrounds/IceTemple.jpg",
         "tileSet" : "images/basetileset.png",
         "tileWidth":32,

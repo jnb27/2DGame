@@ -24,6 +24,7 @@ typedef struct
 	int         tileWidth;   /**<now many pixels wide the tiles are*/
 	int         tileHeight;  /**<how many pixels tall each tile is*/
 	int         tileFPL;
+	int			Biome;
 }Level;
 
 

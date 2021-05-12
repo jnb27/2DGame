@@ -22,9 +22,9 @@ Entity *fire_monster_spawn()
 		slog("failed to create test");
 		return NULL;
 	}
-	monster->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+	monster->sprite = gf2d_sprite_load_all("images/enemies/FlameMonster.png", 130, 146, 1);
 	monster->frameRate = 0.1;
-	monster->frameCount = 8;
+	monster->frameCount = 1;
 	//monster->update = player_update;
 	monster->rotation.x = 64;
 	monster->rotation.y = 64;
@@ -54,9 +54,9 @@ Entity *water_monster_spawn()
 		slog("failed to create test");
 		return NULL;
 	}
-	monster->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+	monster->sprite = gf2d_sprite_load_all("images/enemies/WaterMonster.jpg", 100, 200, 3);
 	monster->frameRate = 0.1;
-	monster->frameCount = 8;
+	monster->frameCount = 12;
 	//monster->update = player_update;
 	monster->rotation.x = 64;
 	monster->rotation.y = 64;
@@ -87,9 +87,9 @@ Entity *earth_monster_spawn()
 		slog("failed to create test");
 		return NULL;
 	}
-	monster->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+	monster->sprite = gf2d_sprite_load_all("images/enemies/EarthMonster.png", 96, 96, 4);
 	monster->frameRate = 0.1;
-	monster->frameCount = 8;
+	monster->frameCount = 16;
 	//monster->update = player_update;
 	monster->rotation.x = 64;
 	monster->rotation.y = 64;
@@ -119,9 +119,9 @@ Entity *wind_monster_spawn()
 		slog("failed to create test");
 		return NULL;
 	}
-	monster->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+	monster->sprite = gf2d_sprite_load_all("images/enemies/WindMonster.png", 100, 154, 8);
 	monster->frameRate = 0.1;
-	monster->frameCount = 8;
+	monster->frameCount = 24;
 	//monster->update = player_update;
 	monster->rotation.x = 64;
 	monster->rotation.y = 64;
@@ -151,9 +151,9 @@ Entity *ice_monster_spawn()
 		slog("failed to create test");
 		return NULL;
 	}
-	monster->sprite = gf2d_sprite_load_all("images/enemies/mage-2-122x110.png", 122, 110, 4);
+	monster->sprite = gf2d_sprite_load_all("images/enemies/IceMonster.png", 110, 110, 6);
 	monster->frameRate = 0.1;
-	monster->frameCount = 8;
+	monster->frameCount = 24;
 	//monster->update = player_update;
 	monster->rotation.x = 64;
 	monster->rotation.y = 64;
@@ -539,8 +539,8 @@ Entity *Monster_Team()
 	team->think = MonsterTeam_Think;
 	team->TurnActive = 0;
 	team->TurnComplete = 0;
-	team->Member1 = fire_monster_spawn();
-	team->Member2 = fire_monster_spawn();
+	team->Member1 = wind_monster_spawn();
+	team->Member2 = earth_monster_spawn();
 	team->Member3 = fire_monster_spawn();
 
 	team->Member1->FriendlyTeam = team;
@@ -559,19 +559,22 @@ void MonsterTeam_Think(Entity *self)
 	
 
 	//Theoretical code for waving not ready yet, 
-	if (self->Member1 == NULL && self->deaths > 10 && self->deaths <= 30)
+	if (self->Member1->health <= 0 &&  self->deaths <= 30)
 	{
 		//If my first member is dead and it's not time for shop yet, respawn someone new
+		self->Member1 = NULL;
 		self->Member1 = RandomSpawn();
 	}
-	if (self->Member2 == NULL && self->deaths > 10 && self->deaths <= 30)
+	if (self->Member2->health <= 0  && self->deaths <= 30)
 	{
 		//If my first member is dead and it's not time for shop yet, respawn someone new
+		self->Member2 = NULL;
 		self->Member2 = RandomSpawn();
 	}
-	if (self->Member3 == NULL && self->deaths > 10 && self->deaths <= 30)
+	if (self->Member3->health <= 0  && self->deaths <= 30)
 	{
 		//If my first member is dead and it's not time for shop yet, respawn someone new
+		self->Member3 = NULL;
 		self->Member3 = RandomSpawn();
 	}
 
@@ -700,6 +703,7 @@ void MonsterDeath(Entity *self)
 {
 	//Drop gold, drop items, 
 	self->FriendlyTeam->TargetTeam->gold += 15;
+	self->FriendlyTeam->deaths += 5;
 
 	//Random chance to drop loot
 	int ran = (gfc_random() * 10) + 1;
