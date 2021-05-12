@@ -38,6 +38,7 @@ void SelectTeamMember(Entity *self);
 void SelectEnemyMember(Entity *self);
 void PickTargetType(Entity *self);
 void EndTurn(Entity *self);
+void SkillCheck(Entity *self, int Skill);
 
 void MasteryCheck(Entity *self, int SkillCheck);
 
@@ -528,6 +529,8 @@ void FireMage_Think(Entity *self)
 			if (keys[SDL_SCANCODE_1])
 			{
 				Fireball(self, self->target);
+				SkillCheck(self, 1);
+				self->SkillEXP1 += 20;
 				EndTurn(self);
 				if (self->FriendlyTeam->Biome == 3)
 				{
@@ -541,6 +544,8 @@ void FireMage_Think(Entity *self)
 			{
 				FlameBreath(self);
 				EndTurn(self);
+				SkillCheck(self, 2);
+				self->SkillEXP2 += 20;
 				if (self->FriendlyTeam->Biome == 3)
 				{
 					self->health += 15;
@@ -553,6 +558,7 @@ void FireMage_Think(Entity *self)
 			{
 				slog("Fire Mage used Phoenix Dance, Damage on next hit 2x");
 				self->DoubleDMG = 2;
+				SkillCheck(self, 3);
 				EndTurn(self);
 				if (self->FriendlyTeam->Biome == 3)
 				{
@@ -599,6 +605,8 @@ void WaterMage_Think(Entity *self)
 			if (keys[SDL_SCANCODE_1])
 			{
 				Splash(self, self->target);
+				SkillCheck(self, 1);
+				self->SkillEXP1 += 20;
 				EndTurn(self);
 			}
 
@@ -611,6 +619,8 @@ void WaterMage_Think(Entity *self)
 				self->mana -= 20;
 				slog("Water Mage used heal");
 				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
+				SkillCheck(self, 2);
+				self->SkillEXP2 += 20;
 				EndTurn(self);
 			}
 
@@ -622,6 +632,8 @@ void WaterMage_Think(Entity *self)
 				self->FriendlyTeam->Member3->health += 10;
 				slog("Water Mage used Mega Heal");
 				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
+				SkillCheck(self, 3);
+				self->SkillEXP3 += 20;
 				EndTurn(self);
 			}
 		}
@@ -664,6 +676,8 @@ void EarthMage_Think(Entity *self)
 			{
 				RockThrow(self, self->target);
 				EndTurn(self);
+				SkillCheck(self, 1);
+				self->SkillEXP1 += 20;
 				if (self->FriendlyTeam->Biome == 4)
 				{
 					self->health += 15;
@@ -679,6 +693,8 @@ void EarthMage_Think(Entity *self)
 				self->ShieldHP += 30;
 				self->mana -= 40;
 				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
+				SkillCheck(self, 2);
+				self->SkillEXP2 += 20;
 				EndTurn(self);
 				if (self->FriendlyTeam->Biome == 4)
 				{
@@ -696,6 +712,8 @@ void EarthMage_Think(Entity *self)
 				self->mana -= 60;
 				slog("Earth mages uses Iron Will");
 				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
+				SkillCheck(self, 3);
+				self->SkillEXP3 += 20;
 				EndTurn(self);
 				if (self->FriendlyTeam->Biome == 4)
 				{
@@ -758,7 +776,8 @@ void WindMage_Think(Entity *self)
 				gfc_sound_play(self->Audio1, 0, 0.5, 2, -1);
 				Gust(self, self->target);
 				EndTurn(self);
-
+				SkillCheck(self, 1);
+				self->SkillEXP1 += 20;
 				if (self->FriendlyTeam->Biome == 2)
 				{
 					self->health += 15;
@@ -773,7 +792,9 @@ void WindMage_Think(Entity *self)
 				slog("Wind Mage uses Whirlwind");
 				Whirlwind(self);
 				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
+				SkillCheck(self, 2);
 				EndTurn(self);
+				self->SkillEXP2 += 20;
 				if (self->FriendlyTeam->Biome == 2)
 				{
 					self->health += 15;
@@ -788,6 +809,7 @@ void WindMage_Think(Entity *self)
 				slog("Wind mage uses plunder");
 				int random = gfc_random() * 5;
 				slog("%d", random);
+
 				if (self->FriendlyTeam->Biome == 2)
 				{
 					self->health += 15;
@@ -872,6 +894,8 @@ void IceMage_Think(Entity *self)
 			{
 				IceSpike(self, self->target);
 				gfc_sound_play(self->Audio1, 0, 1, 2, -1);
+				SkillCheck(self, 1);
+				self->SkillEXP1 += 20;
 				EndTurn(self);
 
 				if (self->FriendlyTeam->Biome == 1)
@@ -886,6 +910,8 @@ void IceMage_Think(Entity *self)
 			{
 				Blizzard(self);
 				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
+				SkillCheck(self, 2);
+				self->SkillEXP2 += 20;
 				EndTurn(self);
 
 				if (self->FriendlyTeam->Biome == 1)
@@ -900,6 +926,8 @@ void IceMage_Think(Entity *self)
 			{
 				AbsZero(self, self->target);
 				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
+				SkillCheck(self, 3);
+				self->SkillEXP3 += 20;
 				EndTurn(self);
 
 				if (self->FriendlyTeam->Biome == 1)
