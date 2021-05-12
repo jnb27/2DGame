@@ -1,5 +1,6 @@
 #include "simple_logger.h"
 #include "Monster.h"
+#include "Item.h"
 
 const Uint8 *keys;
 void MonsterTeam_Think(Entity *self);
@@ -9,6 +10,8 @@ void IceMonsterThink(Entity *self);
 void WaterMonsterThink(Entity *self);
 void EarthMonsterThink(Entity *self);
 void WindMonsterThink(Entity *self);
+
+void MonsterDeath(Entity *self);
 
 Entity *fire_monster_spawn()
 {
@@ -223,7 +226,7 @@ void FireMonsterThink(Entity *self)
 
 	if (self->health <= 0)
 	{
-		entity_free(self);
+		MonsterDeath(self);
 		slog("Fire monster down");
 	}
 
@@ -273,7 +276,7 @@ void IceMonsterThink(Entity *self)
 
 	if (self->health <= 0)
 	{
-		entity_free(self);
+		MonsterDeath(self);
 		slog("Ice monster down");
 	}
 
@@ -323,7 +326,7 @@ void WaterMonsterThink(Entity *self)
 
 	if (self->health <= 0)
 	{
-		entity_free(self);
+		MonsterDeath(self);
 		slog("Water monster down");
 	}
 
@@ -373,7 +376,7 @@ void EarthMonsterThink(Entity *self)
 
 	if (self->health <= 0)
 	{
-		entity_free(self);
+		MonsterDeath(self);
 		slog("Earth monster down");
 	}
 
@@ -423,11 +426,7 @@ void WindMonsterThink(Entity *self)
 
 	if (self->health <= 0)
 	{
-		entity_free(self);
-		slog("Wind monster down");
-		self->FriendlyTeam->Member1 = NULL;
-		self->FriendlyTeam->Member2 = NULL;
-		self->FriendlyTeam->Member3 = NULL;
+		MonsterDeath(self);
 	}
 
 	if (self->TurnActive == 1 && self->TurnComplete == 0)
@@ -695,4 +694,61 @@ Entity *RandomSpawn()
 		slog("New water arrived");
 	}
 	return Spawn;
+}
+
+void MonsterDeath(Entity *self)
+{
+	//Drop gold, drop items, 
+	self->FriendlyTeam->TargetTeam->gold += 15;
+
+	//Random chance to drop loot
+	int ran = (gfc_random() * 10) + 1;
+
+	if (ran >= 6)
+	{
+		//Drop an item
+		slog("Time to drop an item");
+		int itemnum = (gfc_random() * 5) + 1;
+		int randomx = (int)(gfc_random() * 100) + 900;
+		int randomy = (int)(gfc_random() * 200) + 100;
+
+		switch (itemnum){
+		default:
+			slog("You hit default");
+		case 1:
+			//Drop a health pot at a random spot 
+			slog("HP dropped");
+			self->FriendlyTeam->ActiveDrop1 = ShopHP();
+			self->FriendlyTeam->ActiveDrop1->position.x = randomx;
+			self->FriendlyTeam->ActiveDrop1->position.y = randomy;
+			break;
+		case 2:
+			slog("mana");
+			self->FriendlyTeam->ActiveDrop2 = ShopMana();
+			self->FriendlyTeam->ActiveDrop2->position.x = randomx;
+			self->FriendlyTeam->ActiveDrop2->position.y = randomy;
+			break;
+		case 3:
+			slog("limit");
+			self->FriendlyTeam->ActiveDrop3 = ShopLimit();
+			self->FriendlyTeam->ActiveDrop3->position.x = randomx;
+			self->FriendlyTeam->ActiveDrop3->position.y = randomy;
+			break;
+		case 4: 
+			slog("mix");
+			self->FriendlyTeam->ActiveDrop4 = ShopMix();
+			self->FriendlyTeam->ActiveDrop4->position.x = randomx;
+			self->FriendlyTeam->ActiveDrop4->position.y = randomy;
+			break;
+		case 5: 
+			slog("shield");
+			self->FriendlyTeam->ActiveDrop5 = ShopShield();
+			self->FriendlyTeam->ActiveDrop5->position.x = randomx;
+			self->FriendlyTeam->ActiveDrop5->position.y = randomy;
+			break;
+		}
+	}
+
+	slog("A monster has died");
+	entity_free(self);
 }

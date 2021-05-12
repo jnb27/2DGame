@@ -4,6 +4,7 @@
 #include "gfc_types.h"
 #include "gfc_vector.h"
 #include "gf2d_sprite.h"
+#include "gfc_audio.h"
 
 enum EntityType
 {
@@ -36,6 +37,15 @@ enum TargetSys
 	Shop
 };
 
+enum Biomes
+{
+	FireTemple,
+	IceTemple,
+	WaterTemple,
+	EarthTemple,
+	WindTemple
+};
+
 typedef struct Entity_s
 {
 	Bool       _inuse;
@@ -61,11 +71,31 @@ typedef struct Entity_s
 	int			quantity;
 	int			gold;
 
+	int			Biome;
+
 	int			SkillLevel1;
 	int			SkillLevel2;
 	int			SkillLevel3;
 	int			SkillLevel4;
 	int			SkillLevel5;
+
+	int			SkillBoost;
+	int			SkillBoost2;
+	int			SkillBoost3;
+
+	int			ManaReduction;
+	int			ManaReduction2;
+	int			ManaReduction3;
+
+	int			SkillEXP1;
+	int			SkillEXP2;
+	int			SkillEXP3;
+	int			SkillEXP4;
+	int			SkillEXP5;
+
+	Sound		*Audio1;
+	Sound		*Audio2;
+	Sound		*Audio3;
 
 	struct		Entity_s *Inventory;
 	struct		Entity_s *ItemSlot1;
@@ -73,6 +103,12 @@ typedef struct Entity_s
 	struct		Entity_s *ItemSlot3;
 	struct		Entity_s *ItemSlot4;
 	struct		Entity_s *ItemSlot5;
+
+	struct      Entity_s *ActiveDrop1;
+	struct      Entity_s *ActiveDrop2;
+	struct      Entity_s *ActiveDrop3;
+	struct      Entity_s *ActiveDrop4;
+	struct      Entity_s *ActiveDrop5;
 
 
 	struct		Entity_s *Member1;

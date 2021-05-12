@@ -13,6 +13,7 @@
 #include "Mage.h"
 #include "Monster.h"
 #include "Item.h"
+#include "gfc_audio.h"
 
 void GodHelpMe(Entity *self, Entity *pic);
 void GodHelpMe2(Entity *self, Entity *pic);
@@ -22,6 +23,7 @@ int main(int argc, char * argv[])
 {
 	/*variable declarations*/
 	int done = 0;
+	int MenuActive = 0;
 	const Uint8 * keys;
 	Level *level;
 	Entity *playerT;
@@ -50,6 +52,7 @@ int main(int argc, char * argv[])
 		vector4d(0, 0, 0, 255),
 		0);
 	gf2d_graphics_set_frame_delay(16);
+	gfc_audio_init(256, 16, 4, 4, 1, 1);
 	gf2d_sprite_init(1024);
 	entity_manager_init(300);
 
@@ -57,7 +60,7 @@ int main(int argc, char * argv[])
 	SDL_ShowCursor(SDL_DISABLE);
 
 	/*demo setup*/
-	
+	Sound *BGM = gfc_sound_load("music/wisdom.mp3", 0.5, 1);
 	mouse = gf2d_sprite_load_all("images/pointer.png", 32, 32, 16);
 	level = level_load("levels/exampleLevel.json");
 
@@ -88,109 +91,116 @@ int main(int argc, char * argv[])
 	team2->TargetTeam = team1;
 
 	//water_monster_spawn();
-
+	gfc_sound_play(BGM, 0, 1, 1, -1);
 
 	/*main game loop*/
 	while (!done)
 	{
-		SDL_PumpEvents();   // update SDL's internal event structures
-		keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
-		/*update things here*/
-		SDL_GetMouseState(&mx, &my);
-		mf += 0.1;
-		if (mf >= 16.0)mf = 0;
-
-		if (team2->deaths >= 45 && Bossflip == 0)
+		if (MenuActive == 1)
 		{
-
-			team2 = BossTeam();
-			team1->TargetTeam = team2;
-			team2->TargetTeam = team1;
-			Bossflip = 1;
-		}
-		if (keys[SDL_SCANCODE_J] && Bossflip == 1)
-		{
-			entity_free(team2->Member1);
-			team2 = BossTeam();
-			team1->TargetTeam = team2;
-			team2->Member1->think = BossThink2;
 
 		}
+		else{
 
-		if (keys[SDL_SCANCODE_I])
-		{
-			//Now we spawn the item shop
+			SDL_PumpEvents();   // update SDL's internal event structures
+			keys = SDL_GetKeyboardState(NULL); // get the keyboard state for this frame
+			/*update things here*/
+			SDL_GetMouseState(&mx, &my);
+			mf += 0.1;
+			if (mf >= 16.0)mf = 0;
 
-			//First clean up anything that may be lying around. 
-			entity_free(team2->Member1);
-			entity_free(team2->Member2);
-			entity_free(team2->Member3);
-
-			if (team2->Member4 != NULL)
+			if (team2->deaths >= 45 && Bossflip == 0)
 			{
-				entity_free(team2->Member4);
+
+				team2 = BossTeam();
+				team1->TargetTeam = team2;
+				team2->TargetTeam = team1;
+				Bossflip = 1;
 			}
-			
-			if (team2->Member5 != NULL)
+			if (keys[SDL_SCANCODE_J] && Bossflip == 1)
 			{
-				entity_free(team2->Member5);
+				entity_free(team2->Member1);
+				team2 = BossTeam();
+				team1->TargetTeam = team2;
+				team2->Member1->think = BossThink2;
+
 			}
-			
 
-			team1->Member1->target = NULL;
-			team1->Member2->target = NULL;
-			team1->Member3->target = NULL;
+			if (keys[SDL_SCANCODE_I])
+			{
+				//Now we spawn the item shop
 
-			team1->Member1->TargetMode = Shop;
-			team1->Member2->TargetMode = Shop;
-			team1->Member3->TargetMode = Shop;
+				//First clean up anything that may be lying around. 
+				entity_free(team2->Member1);
+				entity_free(team2->Member2);
+				entity_free(team2->Member3);
+
+				if (team2->Member4 != NULL)
+				{
+					entity_free(team2->Member4);
+				}
+
+				if (team2->Member5 != NULL)
+				{
+					entity_free(team2->Member5);
+				}
 
 
-			team2->Member1 = ShopHP();
-			team2->Member2 = ShopMana();
-			team2->Member3 = ShopLimit();
-			team2->Member4 = ShopMix();
-			team2->Member5 = ShopShield();
+				team1->Member1->target = NULL;
+				team1->Member2->target = NULL;
+				team1->Member3->target = NULL;
+
+				team1->Member1->TargetMode = Shop;
+				team1->Member2->TargetMode = Shop;
+				team1->Member3->TargetMode = Shop;
+
+
+				team2->Member1 = ShopHP();
+				team2->Member2 = ShopMana();
+				team2->Member3 = ShopLimit();
+				team2->Member4 = ShopMix();
+				team2->Member5 = ShopShield();
+			}
+
+			GodHelpMe(team1, PM1);
+			GodHelpMe2(team1, PM2);
+			GodHelpMe3(team1, PM3);
+
+
+			entity_manager_think_all();
+			entity_manager_update_entities();
+
+			gf2d_graphics_clear_screen();// clears drawing buffers
+			// all drawing should happen betweem clear_screen and next_frame
+			//backgrounds drawn first
+
+			level_draw(level);
+
+
+			entity_manager_draw_entities();
+
+			if (PM1 == NULL)
+			{
+				slog("Pic broke");
+			}
+
+			//UI elements last
+			//PM1 = gf2d_sprite_load_image("images/Member1Card.png");
+			//gf2d_sprite_draw(PM1, vector2d(300, 300), NULL,NULL,NULL,NULL, Vector4d(255,255,255, 0 ), 1);
+			gf2d_sprite_draw(
+				mouse,
+				vector2d(mx, my),
+				NULL,
+				NULL,
+				NULL,
+				NULL,
+				&mouseColor,
+				(int)mf);
+			gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
+
+			if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
+			//        slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
 		}
-
-		GodHelpMe(team1, PM1);
-		GodHelpMe2(team1, PM2);
-		GodHelpMe3(team1, PM3);
-
-
-		entity_manager_think_all();
-		entity_manager_update_entities();
-
-		gf2d_graphics_clear_screen();// clears drawing buffers
-		// all drawing should happen betweem clear_screen and next_frame
-		//backgrounds drawn first
-		
-		level_draw(level);
-		
-
-		entity_manager_draw_entities();
-		
-		if (PM1 == NULL)
-		{
-			slog("Pic broke");
-		}
-
-		//UI elements last
-		//PM1 = gf2d_sprite_load_image("images/Member1Card.png");
-		//gf2d_sprite_draw(PM1, vector2d(300, 300), NULL,NULL,NULL,NULL, Vector4d(255,255,255, 0 ), 1);
-		gf2d_sprite_draw(
-			mouse,
-			vector2d(mx, my),
-			NULL,
-			NULL,
-			NULL,
-			NULL,
-			&mouseColor,
-			(int)mf);
-		gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
-
-		if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
-		//        slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
 	}
 	slog("---==== END ====---");
 	return 0;

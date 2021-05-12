@@ -2,6 +2,7 @@
 
 #include "Mage.h"
 #include "Item.h"
+#include "gfc_audio.h"
 
 const Uint8 *keys;
 
@@ -15,11 +16,29 @@ void EarthMage_Think(Entity *self);
 void IceMage_Think(Entity *self);
 void WindMage_Think(Entity *self);
 
+void Fireball(Entity *self, Entity *target);
+void FlameBreath(Entity *self);
+
+void Splash(Entity *self, Entity *target);
+
+void RockThrow(Entity *self, Entity *target);
+
+void IceSpike(Entity *self, Entity *target);
+void Blizzard(Entity *self);
+void AbsZero(Entity *self, Entity *target);
+
+void Gust(Entity *self, Entity *target);
+void Whirlwind(Entity *self);
+
 void HandleInventory(Entity *self);
 void SelectTeamMember(Entity *self);
 void SelectEnemyMember(Entity *self);
 void PickTargetType(Entity *self);
 void EndTurn(Entity *self);
+
+void MasteryCheck(Entity *self, int SkillCheck);
+
+
 
 Entity *fire_mage_spawn()
 {
@@ -64,6 +83,9 @@ Entity *fire_mage_spawn()
 	//Move 2 : Buff Next Attack for Double damage on next turn 
 	//Move 3 : Something
 
+	Sound *FlameAttack = gfc_sound_load("music/FlameArrow.mp3", 0.5, 1);
+	mage->Audio1 = FlameAttack;
+
 	return mage;
 }
 
@@ -104,6 +126,15 @@ Entity *water_mage_spawn()
 	mage->SkillLevel3 = 1;
 	mage->SkillLevel4 = 1;
 	mage->SkillLevel5 = 1;
+
+	Sound *WaterSplash = gfc_sound_load("music/Drip.mp3", 0.5, 1);
+	mage->Audio1 = WaterSplash;
+
+	Sound *SingleHeal = gfc_sound_load("music/Heal.wav", 0.5, 1);
+	mage->Audio2 = SingleHeal;
+
+	Sound *LargeHeal = gfc_sound_load("music/MegaHeal.wav", 0.5, 1);
+	mage->Audio3 = LargeHeal;
 
 	//High Healing Kit, High HP, High Mana, Next to no damage
 	//Move 1: Heal Ally 
@@ -149,6 +180,15 @@ Entity *earth_mage_spawn()
 	mage->SkillLevel3 = 1;
 	mage->SkillLevel4 = 1;
 	mage->SkillLevel5 = 1;
+
+	Sound *RockThrow = gfc_sound_load("music/RockThrow.wav", 0.5, 1);
+	mage->Audio1 = RockThrow;
+
+	Sound *Shield = gfc_sound_load("music/Shield.wav", 0.5, 1);
+	mage->Audio2 = Shield;
+
+	Sound *HyperShield = gfc_sound_load("music/HyperShield.wav", 0.5, 1);
+	mage->Audio3 = HyperShield;
 	//Shields ? Maybe debuffs or High HP, Low damage, Low costs
 	//Move 1: Damage Enemy
 	//Move 2: Shield self
@@ -197,7 +237,14 @@ Entity *wind_mage_spawn()
 	//Move 1: Give someone an extra turn might be hard
 	//Move 2: Damage enemy
 	//Move 3: Grant someone a free dodge
+	Sound *WindAttack = gfc_sound_load("music/Wind.mp3", 0.5, 1);
+	mage->Audio1 = WindAttack;
 
+	Sound *Whirlwind = gfc_sound_load("music/Thunder.wav", 0.5, 1);
+	mage->Audio2 = Whirlwind;
+
+	Sound *Coin = gfc_sound_load("music/Coin.wav", 0.5, 1);
+	mage->Audio3 = Coin;
 	return mage;
 }
 
@@ -237,6 +284,16 @@ Entity *ice_mage_spawn()
 	mage->SkillLevel3 = 1;
 	mage->SkillLevel4 = 1;
 	mage->SkillLevel5 = 1;
+
+	Sound *IceS = gfc_sound_load("music/Ice.wav", 0.5, 1);
+	mage->Audio1 = IceS;
+
+	Sound *Blizz = gfc_sound_load("music/Hail.wav", 0.5, 1);
+	mage->Audio2 = Blizz;
+
+	Sound *Abs = gfc_sound_load("music/IceHit.wav", 0.5, 1);
+	mage->Audio3 = Abs;
+
 	//Low Hp, High Cost, Extremely High Damage Glass cannon
 	//Move 1: Damage enemy 
 	//Move 2: Stop an enemy from taking a turn 
@@ -282,60 +339,18 @@ void FireMage_Think(Entity *self)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
-				//Do Move 1
-				slog("Fire Mage used Fireball");
-
-				if (self->SkillLevel1 > 1)
-				{
-					self->mana -= 10 - (self->SkillLevel1);
-				}
-				else
-				{
-					self->mana -= 10;
-				}
-
-
-				if (self->target->ElementType == Fire)
-				{
-					self->target->health = (self->target->health - (15 * self->DoubleDMG));
-					self->DoubleDMG = 1;
-					slog("Reduced Damage, Fire on Fire");
-				}
-				else{
-					self->target->health = (self->target->health - (30 * self->DoubleDMG));
-					self->DoubleDMG = 1;
-				}
-
+				Fireball(self, self->target);
 				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_2])
 			{
-				//Do Move 2
-				slog("Fire mage used Flame Breath");
-				self->mana -= 25;
-
-				if (self->target->ElementType == Fire)
-				{
-					self->target->FriendlyTeam->Member1->health = (self->target->health - (10 * self->DoubleDMG));
-					self->target->FriendlyTeam->Member2->health = (self->target->health - (10 * self->DoubleDMG));
-					self->target->FriendlyTeam->Member3->health = (self->target->health - (10 * self->DoubleDMG));
-					self->DoubleDMG = 1;
-					slog("Reduced Fire damage");
-				}
-				else {
-					self->target->FriendlyTeam->Member1->health = (self->target->health - (15 * self->DoubleDMG));
-					self->target->FriendlyTeam->Member2->health = (self->target->health - (15 * self->DoubleDMG));
-					self->target->FriendlyTeam->Member3->health = (self->target->health - (15 * self->DoubleDMG));
-					self->DoubleDMG = 1;
-				}
-
+				FlameBreath(self);
 				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_3])
 			{
-				//Do Move 3
 				slog("Fire Mage used Phoenix Dance, Damage on next hit 2x");
 				self->DoubleDMG = 2;
 				EndTurn(self);
@@ -377,10 +392,7 @@ void WaterMage_Think(Entity *self)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
-				//Do Move 1
-				slog("Water Mage used Splash");
-				self->target->health -= 15;
-				self->mana -= 10;
+				Splash(self, self->target);
 				EndTurn(self);
 			}
 
@@ -392,6 +404,7 @@ void WaterMage_Think(Entity *self)
 				self->target->health += 20;
 				self->mana -= 20;
 				slog("Water Mage used heal");
+				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 
@@ -402,6 +415,7 @@ void WaterMage_Think(Entity *self)
 				self->FriendlyTeam->Member2->health += 10;
 				self->FriendlyTeam->Member3->health += 10;
 				slog("Water Mage used Mega Heal");
+				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 		}
@@ -441,10 +455,7 @@ void EarthMage_Think(Entity *self)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
-				//Do Move 1
-				slog("Earth Mage used Rock Throw");
-				self->target->health -= 20;
-				self->mana -= 15;
+				RockThrow(self, self->target);
 				EndTurn(self);
 			}
 
@@ -454,6 +465,7 @@ void EarthMage_Think(Entity *self)
 				slog("Earth Mage Shields themselves");
 				self->ShieldHP += 30;
 				self->mana -= 40;
+				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 
@@ -464,6 +476,7 @@ void EarthMage_Think(Entity *self)
 				self->health += 25;
 				self->mana -= 60;
 				slog("Earth mages uses Iron Will");
+				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 		}
@@ -513,10 +526,9 @@ void WindMage_Think(Entity *self)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
-				//Do Move 1
-				slog("Wind Mage used Gust");
-				self->target->health -= 10;
-				self->mana -= 10;
+
+				gfc_sound_play(self->Audio1, 0, 0.5, 2, -1);
+				Gust(self, self->target);
 				EndTurn(self);
 			}
 
@@ -524,9 +536,8 @@ void WindMage_Think(Entity *self)
 			{
 				//Do Move 2
 				slog("Wind Mage uses Whirlwind");
-				self->TargetTeam->Member1->health -= 10;
-				self->TargetTeam->Member2->health -= 10;
-				self->TargetTeam->Member3->health -= 10;
+				Whirlwind(self);
+				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 
@@ -572,7 +583,7 @@ void WindMage_Think(Entity *self)
 					self->Inventory->ItemSlot5->quantity += 1;
 					self->mana -= 40;
 				}
-
+				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 		}
@@ -611,30 +622,22 @@ void IceMage_Think(Entity *self)
 		{
 			if (keys[SDL_SCANCODE_1])
 			{
-				//Do Move 1
-				slog("Ice Mage used Ice Spike");
-				self->target->health -= 20;
-				self->mana -= 15;
+				IceSpike(self, self->target);
+				gfc_sound_play(self->Audio1, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_2])
 			{
-				//Do Move 2
-				slog("Ice Mage used Blizzard");
-				self->TargetTeam->Member1->health -= 25;
-				self->TargetTeam->Member2->health -= 25;
-				self->TargetTeam->Member3->health -= 25;
-				self->mana -= 30;
+				Blizzard(self);
+				gfc_sound_play(self->Audio2, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 
 			if (keys[SDL_SCANCODE_3])
 			{
-				//Do Move 3
-				slog("Ice Mage used Death spike");
-				self->target->health -= 50;
-				self->mana -= 60;
+				AbsZero(self, self->target);
+				gfc_sound_play(self->Audio3, 0, 1, 2, -1);
 				EndTurn(self);
 			}
 		}
@@ -678,6 +681,9 @@ Entity *Mage_Team()
 	team->Member1->FriendlyTeam = team;
 	team->Member2->FriendlyTeam = team;
 	team->Member3->FriendlyTeam = team;
+
+	//Biome Setting here
+	team->Biome = FireTemple;
 
 	return team; 
 }
@@ -1071,3 +1077,324 @@ void EndTurn(Entity *self)
 	SDL_Delay(350);
 }
 
+void SkillCheck(Entity *self, int Skill)
+{
+	if (Skill == 1)
+	{
+		if (self->SkillEXP1 >= 20 && self->SkillEXP1 < 50)
+		{
+			self->SkillLevel1 = 2;
+			self->SkillBoost = 10;
+			self->ManaReduction = 3;
+		}
+		if (self->SkillEXP1 >= 50 && self->SkillEXP1 < 100)
+		{
+			self->SkillLevel1 = 3;
+			self->SkillBoost = 15;
+			self->ManaReduction = 6;
+		}
+		if (self->SkillEXP1 >= 100 && self->SkillEXP1 < 150)
+		{
+			self->SkillLevel1 = 4;
+			self->SkillBoost = 20;
+			self->ManaReduction = 10;
+		}
+		if (self->SkillEXP1 >= 150)
+		{
+			self->SkillLevel1 = 5;
+			self->SkillBoost = 30;
+			self->ManaReduction = 20;
+		}
+	}
+	if (Skill == 2)
+	{
+		if (self->SkillEXP2 >= 20 && self->SkillEXP2 < 50)
+		{
+			self->SkillLevel2 = 2;
+			self->SkillBoost2 = 10;
+			self->ManaReduction2 = 3;
+		}
+		if (self->SkillEXP2 >= 50 && self->SkillEXP2 < 100)
+		{
+			self->SkillLevel2 = 3;
+			self->SkillBoost2 = 15;
+			self->ManaReduction2 = 6;
+		}
+		if (self->SkillEXP2 >= 100 && self->SkillEXP2 < 150)
+		{
+			self->SkillLevel2 = 4;
+			self->SkillBoost2 = 20;
+			self->ManaReduction2 = 10;
+		}
+		if (self->SkillEXP2 >= 150)
+		{
+			self->SkillLevel2 = 5;
+			self->SkillBoost2 = 30;
+			self->ManaReduction2 = 20;
+		}
+	}
+	if (Skill == 3)
+	{
+		if (self->SkillEXP3 >= 20 && self->SkillEXP3 < 50)
+		{
+			self->SkillLevel3 = 2;
+			self->SkillBoost3 = 10;
+			self->ManaReduction3 = 3;
+
+		}
+		if (self->SkillEXP3 >= 50 && self->SkillEXP3 < 100)
+		{
+			self->SkillLevel3 = 3;
+			self->SkillBoost3 = 15;
+			self->ManaReduction3 = 6;
+		}
+		if (self->SkillEXP3 >= 100 && self->SkillEXP3 < 150)
+		{
+			self->SkillLevel3 = 4;
+			self->SkillBoost3 = 20;
+			self->ManaReduction3 = 10;
+		}
+		if (self->SkillEXP3 >= 150)
+		{
+			self->SkillLevel3 = 5;
+			self->SkillBoost3 = 30;
+			self->ManaReduction3 = 20;
+		}
+	}
+
+}
+
+void MasteryCheck(Entity *self, int SkillNum)
+{
+	//More damage and less mana
+	if (SkillNum == 1)
+	{
+
+	}
+
+	if (SkillNum == 2)
+	{
+		
+	}
+
+	if (SkillCheck == 3)
+	{
+		int Level = self->SkillLevel3;
+	}
+
+	if (SkillCheck == 4)
+	{
+		int Level = self->SkillLevel4;
+	}
+	
+	if (SkillCheck == 5)
+	{
+		int Level = self->SkillLevel5;
+	}
+
+}
+
+void Fireball(Entity *self, Entity *target)
+{
+	//Do Move 1
+	slog("Fire Mage used Fireball");
+	gfc_sound_play(self->Audio1, 0, 1, 2, -1);
+
+	if (target->ElementType == Fire || target->ElementType == Water)
+	{
+		target->health = (target->health - (10 * self->DoubleDMG) - self->SkillBoost);
+		self->DoubleDMG = 1;
+		slog("Reduced Damage, Fire on Fire");
+	}
+
+	if (target->ElementType == Wind || target->ElementType == Earth)
+	{
+		target->health = (target->health - (20 * self->DoubleDMG) - self->SkillBoost);
+		self->DoubleDMG = 1;
+	}
+
+	if (target->ElementType == Ice)
+	{
+		target->health = (target->health - (30 * self->DoubleDMG) - self->SkillBoost);
+		self->DoubleDMG = 1;
+	}
+	self->mana += self->ManaReduction;
+	self->SkillEXP1 += 5;
+	//EndTurn(self);
+}
+
+void FlameBreath(Entity *self)
+{
+	slog("Fire mage used Flame Breath");
+	self->mana -= 25;
+
+	Entity *T1 = self->target->FriendlyTeam->Member1;
+	Entity *T2 = self->target->FriendlyTeam->Member2;
+	Entity *T3 = self->target->FriendlyTeam->Member3;
+
+	Fireball(self, T1);
+	Fireball(self, T2);
+	Fireball(self, T3);
+
+	self->mana += self->ManaReduction2;
+	self->SkillEXP2 += 5;
+	//EndTurn(self);
+}
+
+void Splash(Entity *self, Entity *target)
+{
+	//Do Move 1
+	slog("Water Mage used Splash");
+	gfc_sound_play(self->Audio1, 0, 1, 2, -1);
+	if (target->ElementType == Water || target->ElementType == Ice)
+	{
+		target->health -= (10 + self->SkillBoost); 
+		slog("Reduced damage");
+	}
+
+	if (target->ElementType == Wind || target->ElementType == Earth)
+	{
+		target->health -= (15 + self->SkillBoost);
+	}
+
+	if (target->ElementType == Fire)
+	{
+		target->health -= (20 + self->SkillBoost);
+		slog("Type Advantage");
+	}
+
+	self->mana -= 10;
+	self->mana += self->ManaReduction; 
+	self->SkillEXP1 += 5;
+	//EndTurn(self);
+}
+
+void RockThrow(Entity *self, Entity *target)
+{
+	//Do Move 1
+	slog("Earth Mage used Rock Throw");
+	gfc_sound_play(self->Audio1, 0, 1, 2, -1);
+
+	if (target->ElementType == Wind || target->ElementType == Earth)
+	{
+		target->health -= 10;
+	}
+
+	if (target->ElementType == Water || target->ElementType == Ice)
+	{
+		target->health -= 15;
+	}
+
+	if (target->ElementType == Fire)
+	{
+		target->health -= 20;
+	}
+	
+	self->mana -= 15;
+	self->mana += self->ManaReduction;
+	self->SkillEXP1 += 5;
+}
+
+void IceSpike(Entity *self, Entity *target)
+{
+	//Do Move 1
+	slog("Ice Mage used Ice Spike");
+
+	if (target->ElementType == Fire || target->ElementType == Ice)
+	{
+		target->health -= 10; 
+	}
+
+	if (target->ElementType == Wind || target->ElementType == Water)
+	{
+		target->health -= 15;
+	}
+
+	if (target->ElementType == Earth)
+	{
+		target->health -= 20; 
+	}
+
+	self->mana -= 15;
+	self->mana += self->ManaReduction;
+	self->SkillEXP1 += 5;
+}
+
+void Blizzard(Entity *self)
+{
+	slog("Ice Mage used Blizzard");
+	self->mana -= 30;
+
+	Entity *T1 = self->target->FriendlyTeam->Member1;
+	Entity *T2 = self->target->FriendlyTeam->Member2;
+	Entity *T3 = self->target->FriendlyTeam->Member3;
+
+	IceSpike(self, T1);
+	IceSpike(self, T2);
+	IceSpike(self, T3);
+
+	self->mana += self->ManaReduction2;
+	self->SkillEXP2 += 5;
+}
+
+void AbsZero(Entity *self, Entity *target)
+{
+	//Do Move 3
+	slog("Ice Mage: So Cold it burns.");
+	if (target->ElementType == Fire || target->ElementType == Ice)
+	{
+		target->health -= 40;
+	}
+
+	if (target->ElementType == Wind || target->ElementType == Water)
+	{
+		target->health -= 45;
+	}
+
+	if (target->ElementType == Earth)
+	{
+		target->health -= 60;
+	}
+
+	self->mana -= 60;
+	self->mana += self->ManaReduction3;
+	self->SkillEXP3 += 5;
+}
+
+void Gust(Entity *self, Entity *target)
+{
+	//Do Move 1
+	slog("Wind Mage used Gust");
+	if (target->ElementType == Earth || target->ElementType == Ice)
+	{
+		target->health -= 15;
+	}
+
+	if (target->ElementType == Water || target->ElementType == Wind)
+	{
+		target->health -= 20;
+	}
+
+	if (target->ElementType == Fire)
+	{
+		target->health -= 25;
+	}
+	self->mana -= 10;
+	self->mana += self->ManaReduction;
+	self->SkillEXP1 += 5;
+}
+
+void Whirlwind(Entity *self)
+{
+	self->mana -= 30;
+
+	Entity *T1 = self->target->FriendlyTeam->Member1;
+	Entity *T2 = self->target->FriendlyTeam->Member2;
+	Entity *T3 = self->target->FriendlyTeam->Member3;
+
+	Gust(self, T1);
+	Gust(self, T2);
+	Gust(self, T3);
+	self->mana += self->ManaReduction2;
+	self->SkillEXP2 += 5;
+}
