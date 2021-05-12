@@ -696,6 +696,9 @@ Entity *RandomSpawn()
 		Spawn = water_monster_spawn();
 		slog("New water arrived");
 	}
+	else{
+		Spawn = water_monster_spawn();
+	}
 	return Spawn;
 }
 

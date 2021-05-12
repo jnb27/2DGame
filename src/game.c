@@ -30,10 +30,10 @@ int main(int argc, char * argv[])
 	
 	const Uint8 * keys;
 	Level *level;
-	Entity *playerT;
+	//Entity *playerT;
 	Entity *team1;
 	Entity *team2;
-	Entity *PM1HP;
+	//Entity *PM1HP;
 
 	int mx, my;
 	float mf = 0;
@@ -216,7 +216,7 @@ int main(int argc, char * argv[])
 
 			if (PM1 == NULL)
 			{
-				slog("Pic broke");
+				slog("Pics broke");
 			}
 
 			//UI elements last
@@ -234,7 +234,7 @@ int main(int argc, char * argv[])
 			gf2d_grahics_next_frame();// render current draw frame and skip to the next frame
 
 			if (keys[SDL_SCANCODE_ESCAPE])done = 1; // exit condition
-			//        slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
+			        //slog("Rendering at %f FPS",gf2d_graphics_get_frames_per_second());
 		}
 	}
 	slog("---==== END ====---");
