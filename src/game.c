@@ -241,6 +241,8 @@ int main(int argc, char * argv[])
 	return 0;
 }
 
+
+//I am not proud of this method I used to get HP text going, but when the going gets rough life finds a way. 
 void GodHelpMe(Entity *self, Entity *pic)
 {
 	switch (self->Member1->health)
